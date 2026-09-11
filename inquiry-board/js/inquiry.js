@@ -37,7 +37,7 @@ function renderResult(inquiry) {
   if (inquiry.matchFailed) {
     resultBox.classList.add("fail");
     const reasonText =
-      inquiry.failReason === "no_team_found"
+      inquiry.failReason === "no_candidate"
         ? "관련 팀을 자동으로 찾지 못했습니다."
         : `가장 가까운 팀(추정: ${inquiry.matchedTeam})은 찾았지만 확신도가 낮습니다.`;
     resultBox.innerHTML = `

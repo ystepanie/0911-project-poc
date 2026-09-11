@@ -2,8 +2,7 @@
 // 3-1: 완료됐지만 설문 미발송인 건 → "설문 발송 확정" 버튼
 // 3-2: 매칭 실패(미배정) 건 → 팀 수동 배정 버튼
 
-import { listSurveyPending, listUnassigned, markSurveyReady, assignTeam } from "./api.js";
-import { mockData } from "./mock-data.js";
+import { listSurveyPending, listUnassigned, markSurveyReady, assignTeam, getTeams } from "./api.js";
 
 const surveyPendingEl = document.getElementById("admin-survey-pending");
 const unassignedEl = document.getElementById("admin-unassigned");
@@ -49,7 +48,8 @@ async function renderUnassigned() {
     return;
   }
 
-  const teamOptions = mockData.TEAMS.map((t) => `<option value="${t.name}">${t.name}</option>`).join("");
+  const teams = await getTeams();
+  const teamOptions = teams.map((t) => `<option value="${t.id}">${t.name}</option>`).join("");
 
   unassignedEl.innerHTML = items
     .map(
@@ -71,7 +71,7 @@ async function renderUnassigned() {
       const select = unassignedEl.querySelector(`.team-select[data-id="${btn.dataset.id}"]`);
       if (!select.value) return;
       btn.disabled = true;
-      await assignTeam(btn.dataset.id, select.value);
+      await assignTeam(btn.dataset.id, Number(select.value));
       await renderUnassigned();
     });
   });
