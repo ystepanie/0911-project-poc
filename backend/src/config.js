@@ -10,4 +10,13 @@ const REMINDER_TIMEOUT_MS = Number(process.env.REMINDER_TIMEOUT_MS) || 5000; // 
 const ESCALATION_TIMEOUT_MS = Number(process.env.ESCALATION_TIMEOUT_MS) || 5000; // PoC 테스트값: 5초 (운영: 7200000)
 const SCHEDULER_INTERVAL_MS = Number(process.env.SCHEDULER_INTERVAL_MS) || 1000; // PoC 테스트값: 1초 (운영: 900000 = 15분)
 
-module.exports = { REMINDER_TIMEOUT_MS, ESCALATION_TIMEOUT_MS, SCHEDULER_INTERVAL_MS };
+// 매칭 실패(미배정) 건 관리자 수동 배정 SLA (문의라우팅_백엔드_구현계획.md 5.6절: "예 1영업일 이내")
+// ⚠️ PoC 테스트값: 5초. 운영 목표값은 1영업일(대략 28800000 = 8시간 근무 기준, 정책에 따라 조정)
+const ADMIN_ASSIGN_SLA_MS = Number(process.env.ADMIN_ASSIGN_SLA_MS) || 5000; // PoC 테스트값: 5초 (운영: 1영업일)
+
+module.exports = {
+  REMINDER_TIMEOUT_MS,
+  ESCALATION_TIMEOUT_MS,
+  SCHEDULER_INTERVAL_MS,
+  ADMIN_ASSIGN_SLA_MS,
+};

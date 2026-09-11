@@ -2,6 +2,7 @@ const express = require("express");
 const inquiriesRouter = require("./routes/inquiries");
 const mockChatRouter = require("./routes/mockChat");
 const chatEventsRouter = require("./routes/chatEvents");
+const adminRouter = require("./routes/admin");
 const timeoutScheduler = require("./scheduler/timeoutScheduler");
 
 const app = express();
@@ -14,9 +15,9 @@ app.get("/health", (req, res) => {
 app.use("/api/inquiries", inquiriesRouter);
 app.use("/api/mock-chat", mockChatRouter); // Phase 6 검증용 (Google Chat 미연동 상태)
 app.use("/api/chat/events", chatEventsRouter); // Phase 7: 완료 트리거 (Mock 페이로드)
+app.use("/api/admin", adminRouter); // Phase 8: 매칭 실패 운영 + 설문 발송 확정
 
 // 인메모리 저장소(src/store/inMemoryStore.js) 사용 중 — Phase 9(DB 연동)에서 실제 repository로 교체 예정
-// 체크리스트 Phase 8에 따라 매칭 실패 운영/설문 발송 확정 관리자 API가 추가될 예정
 // 참고: ../문의라우팅_백엔드_구현계획.md
 
 timeoutScheduler.start(); // ⚠️ PoC 테스트값(config.js): 5초 리마인드/에스컬레이션, 1초 주기 — 운영값 아님
