@@ -1,4 +1,5 @@
 const express = require("express");
+const inquiriesRouter = require("./routes/inquiries");
 
 const app = express();
 app.use(express.json());
@@ -7,7 +8,10 @@ app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
-// 체크리스트 Phase 4~8에 따라 라우터/매칭/Chat 연동/스케줄러가 순차적으로 추가될 예정
+app.use("/api/inquiries", inquiriesRouter);
+
+// 인메모리 저장소(src/store/inMemoryStore.js) 사용 중 — Phase 9(DB 연동)에서 실제 repository로 교체 예정
+// 체크리스트 Phase 6~8에 따라 Chat 연동/스케줄러/관리자 API가 순차적으로 추가될 예정
 // 참고: ../문의라우팅_백엔드_구현계획.md
 
 const PORT = process.env.PORT || 3000;
