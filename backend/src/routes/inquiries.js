@@ -7,6 +7,7 @@ const teams = require("../matching/teams-seed.json");
 const { matchInquiry } = require("../matching");
 const store = require("../store/inMemoryStore");
 const { sendInquiryToTeam } = require("../chat/sendInquiryToTeam");
+const { notifyMatchSuccess, notifyMatchFailure } = require("../email/notifyInquirer"); // Phase 9: 문의자 이메일 알림 (Mock)
 
 const router = express.Router();
 
@@ -59,6 +60,9 @@ router.post("/", (req, res) => {
 
   if (!match.matchFailed) {
     Object.assign(inquiry, sendInquiryToTeam(inquiry, match.matchedTeamId));
+    notifyMatchSuccess(inquiry); // 9-2
+  } else {
+    notifyMatchFailure(inquiry); // 9-3
   }
 
   store.create(inquiry);
