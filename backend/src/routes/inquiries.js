@@ -6,6 +6,7 @@ const express = require("express");
 const teams = require("../matching/teams-seed.json");
 const { matchInquiry } = require("../matching");
 const store = require("../store/inMemoryStore");
+const chatClient = require("../chat/mockChatClient"); // Phase 6: 실제 Google Chat 연동 전까지 Mock 사용
 
 const router = express.Router();
 
@@ -33,8 +34,10 @@ router.post("/", (req, res) => {
     failReason: match.failReason,
     matcherMode: match.matcherMode,
 
-    chatSentAt: match.matchFailed ? null : new Date().toISOString(),
+    chatMessageId: null,
+    chatSentAt: null,
     completedAt: null,
+    completedBy: null,
 
     surveyReady: false,
     surveyReadyAt: null,
@@ -45,6 +48,13 @@ router.post("/", (req, res) => {
       answeredAt: null,
     },
   };
+
+  if (!match.matchFailed) {
+    const team = teams.find((t) => t.id === match.matchedTeamId);
+    const { messageId, sentAt } = chatClient.sendMessage(team.chatSpaceId, inquiry);
+    inquiry.chatMessageId = messageId;
+    inquiry.chatSentAt = sentAt;
+  }
 
   store.create(inquiry);
 
