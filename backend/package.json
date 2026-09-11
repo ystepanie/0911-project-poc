@@ -5,7 +5,9 @@
   "description": "문의 라우팅 자동화 백엔드 (PoC, 스캐폴딩 단계)",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "migrate": "psql \"$DATABASE_URL\" -f migrations/001_create_teams.sql -f migrations/002_create_inquiries.sql -f migrations/003_create_surveys.sql -f migrations/004_create_match_audit_log.sql",
+    "seed": "psql \"$DATABASE_URL\" -f seeds/001_teams.sql"
   },
   "dependencies": {
     "express": "^4.19.2"
