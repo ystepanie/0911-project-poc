@@ -7,10 +7,12 @@ const adminRouter = require("./routes/admin");
 const mockEmailRouter = require("./routes/mockEmail");
 const teamsRouter = require("./routes/teams");
 const timeoutScheduler = require("./scheduler/timeoutScheduler");
+const { UPLOAD_DIR } = require("./upload/uploadMiddleware");
 
 const app = express();
 app.use(cors()); // PoC 단계: 모든 origin 허용. 운영 배포 시 프론트 도메인으로 제한 필요
 app.use(express.json());
+app.use("/uploads", express.static(UPLOAD_DIR)); // 11-5: 첨부 이미지 정적 서빙
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });

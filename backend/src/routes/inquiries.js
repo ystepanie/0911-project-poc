@@ -7,16 +7,18 @@ const teams = require("../matching/teams-seed.json");
 const { matchInquiry } = require("../matching");
 const store = require("../store/inMemoryStore");
 const { sendInquiryToTeam } = require("../chat/sendInquiryToTeam");
+const { upload } = require("../upload/uploadMiddleware"); // 11-2: 이미지 첨부 (JSON 요청이면 그냥 통과됨)
 
 const router = express.Router();
 
-router.post("/", (req, res) => {
+router.post("/", upload.single("image"), (req, res) => {
   const { author, contact, title, content } = req.body || {};
 
   if (!author || !contact || !title || !content) {
     return res.status(400).json({ error: "author, contact, title, content는 필수입니다." });
   }
 
+  // 이미지는 매칭 파이프라인 입력에 포함시키지 않는다 (제목+내용 텍스트만 사용) — Phase 11 설계 원칙
   const match = matchInquiry(`${title} ${content}`, teams);
 
   const inquiry = {
@@ -25,6 +27,7 @@ router.post("/", (req, res) => {
     contact,
     title,
     content,
+    imageUrl: req.file ? `/uploads/${req.file.filename}` : null,
     createdAt: new Date().toISOString(),
 
     candidateTeams: match.candidateTeams,

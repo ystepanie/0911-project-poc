@@ -6,12 +6,16 @@ let seq = 0;
 const log = [];
 
 function buildMessageText(inquiry) {
-  return [
+  const lines = [
     `[${inquiry.id}] ${inquiry.title}`,
     `작성자: ${inquiry.author}`,
     `문의 ID: ${inquiry.id}`,
-    `완료 처리 시 이 메시지에 ✅ 리액션을 남겨주세요.`,
-  ].join("\n");
+  ];
+  if (inquiry.imageUrl) {
+    lines.push(`첨부 이미지: ${inquiry.imageUrl}`); // 11-3: 매칭에는 안 쓰지만 Chat 메시지에는 링크로 노출
+  }
+  lines.push(`완료 처리 시 이 메시지에 ✅ 리액션을 남겨주세요.`);
+  return lines.join("\n");
 }
 
 // interface ChatClient { sendMessage(spaceId, inquiry): { messageId, sentAt } }

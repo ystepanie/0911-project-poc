@@ -1,7 +1,13 @@
 // Phase 10: 백엔드(backend/) 실 서버와 fetch로 연동. 더 이상 localStorage/mock-data.js를 쓰지 않는다.
 // 서버 주소가 다르면 이 상수만 바꾸면 된다.
 
-const API_BASE = "http://localhost:3000/api";
+const API_ORIGIN = "http://localhost:3000";
+const API_BASE = `${API_ORIGIN}/api`;
+
+// 첨부 이미지(imageUrl)는 서버가 "/uploads/..." 형태의 상대 경로로 내려주므로, 화면에 링크로 쓸 절대 URL로 바꿀 때 사용
+export function resolveUploadUrl(imageUrl) {
+  return imageUrl ? `${API_ORIGIN}${imageUrl}` : null;
+}
 
 // 완료 트리거(Chat 리액션)/설문 발송 확정 액션을 누른 "사람"을 이 데모에서는 입력받지 않으므로,
 // 실제로는 로그인(Google Chat 계정, 관리자 계정)에서 가져올 값을 임시 고정값으로 대체한다.
@@ -23,11 +29,28 @@ async function request(path, options = {}) {
   return res.json();
 }
 
-export async function submitInquiry({ author, contact, title, content }) {
-  return request("/inquiries", {
-    method: "POST",
-    body: JSON.stringify({ author, contact, title, content }),
-  });
+export async function submitInquiry({ author, contact, title, content, imageFile }) {
+  // 이미지 첨부가 있으면 multipart/form-data로, 없으면 기존처럼 JSON으로 보낸다 (11-2)
+  if (!imageFile) {
+    return request("/inquiries", {
+      method: "POST",
+      body: JSON.stringify({ author, contact, title, content }),
+    });
+  }
+
+  const formData = new FormData();
+  formData.append("author", author);
+  formData.append("contact", contact);
+  formData.append("title", title);
+  formData.append("content", content);
+  formData.append("image", imageFile);
+
+  const res = await fetch(`${API_BASE}/inquiries`, { method: "POST", body: formData });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || `요청 실패 (${res.status})`);
+  }
+  return res.json();
 }
 
 export async function getInquiry(inquiryId) {

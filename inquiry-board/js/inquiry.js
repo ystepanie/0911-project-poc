@@ -1,4 +1,4 @@
-import { submitInquiry, completeInquiry } from "./api.js";
+import { submitInquiry, completeInquiry, resolveUploadUrl } from "./api.js";
 
 const form = document.getElementById("inquiry-form");
 const resultBox = document.getElementById("result");
@@ -10,6 +10,7 @@ form.addEventListener("submit", async (e) => {
   const contact = document.getElementById("contact").value.trim();
   const title = document.getElementById("title").value.trim();
   const content = document.getElementById("content").value.trim();
+  const imageFile = document.getElementById("image").files[0] || null;
 
   if (!author || !contact || !title || !content) {
     return;
@@ -19,7 +20,7 @@ form.addEventListener("submit", async (e) => {
   submitBtn.disabled = true;
 
   try {
-    const inquiry = await submitInquiry({ author, contact, title, content });
+    const inquiry = await submitInquiry({ author, contact, title, content, imageFile });
     localStorage.setItem("myContact", contact);
     renderResult(inquiry);
     form.reset();
@@ -34,6 +35,11 @@ form.addEventListener("submit", async (e) => {
 function renderResult(inquiry) {
   resultBox.classList.remove("hidden", "success", "fail");
 
+  const imageUrl = resolveUploadUrl(inquiry.imageUrl);
+  const attachmentHtml = imageUrl
+    ? `<p class="muted">첨부 이미지: <a href="${imageUrl}" target="_blank" rel="noopener">${imageUrl}</a></p>`
+    : "";
+
   if (inquiry.matchFailed) {
     resultBox.classList.add("fail");
     const reasonText =
@@ -43,6 +49,7 @@ function renderResult(inquiry) {
     resultBox.innerHTML = `
       <p><strong>문의 ID: ${inquiry.id}</strong></p>
       <p>${reasonText} 담당자가 확인 후 다시 안내드리겠습니다.</p>
+      ${attachmentHtml}
     `;
     return;
   }
@@ -52,6 +59,7 @@ function renderResult(inquiry) {
     <p><strong>문의 ID: ${inquiry.id}</strong></p>
     <p>문의가 <span class="team">${inquiry.matchedTeam}</span>(으)로 전달되었습니다. (매칭 신뢰도: ${(inquiry.matchConfidence * 100).toFixed(0)}%)</p>
     <p class="muted">Google Chat 전송 완료로 처리되었습니다. (mock)</p>
+    ${attachmentHtml}
     <button type="button" id="complete-btn">완료 처리 시뮬레이션</button>
   `;
 

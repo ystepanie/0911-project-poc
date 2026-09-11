@@ -22,9 +22,13 @@
     <label for="content">문의 내용</label>
     <textarea id="content" placeholder="문의 내용을 입력하세요" required></textarea>
 
+    <label for="image">첨부 이미지 (선택, 오류 메시지 스크린샷 등)</label>
+    <input type="file" id="image" accept="image/*" />
+
     <div class="notice">
       ⚠️ 해당 문의사항은 유관 부서 팀 전체에 전달됩니다. 급여, 인사평가, 법적 분쟁 등 민감정보가 포함된 문의는
-      담당자 지정 시 추후 문의해주세요.
+      담당자 지정 시 추후 문의해주세요. 첨부하시는 스크린샷도 동일하게 팀 전체에 노출되니, 개인정보가 찍힌 화면은
+      가려서 올려주세요.
     </div>
 
     <button type="submit">확인</button>
