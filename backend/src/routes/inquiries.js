@@ -7,7 +7,6 @@ const teams = require("../matching/teams-seed.json");
 const { matchInquiry } = require("../matching");
 const store = require("../store/inMemoryStore");
 const { sendInquiryToTeam } = require("../chat/sendInquiryToTeam");
-const { notifyMatchSuccess, notifyMatchFailure } = require("../email/notifyInquirer"); // Phase 9: 문의자 이메일 알림 (Mock)
 
 const router = express.Router();
 
@@ -58,11 +57,10 @@ router.post("/", (req, res) => {
     },
   };
 
+  // 문의 결과는 이 응답으로 화면에 바로 표시되므로, 제출 시점에는 이메일을 보내지 않는다.
+  // 실패 건이 관리자 수동 배정으로 해결됐을 때만 이메일 발송 (routes/admin.js assign-team 참고).
   if (!match.matchFailed) {
     Object.assign(inquiry, sendInquiryToTeam(inquiry, match.matchedTeamId));
-    notifyMatchSuccess(inquiry); // 9-2
-  } else {
-    notifyMatchFailure(inquiry); // 9-3
   }
 
   store.create(inquiry);

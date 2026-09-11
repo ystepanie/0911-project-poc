@@ -5,6 +5,7 @@ const express = require("express");
 const teams = require("../matching/teams-seed.json");
 const store = require("../store/inMemoryStore");
 const { sendInquiryToTeam } = require("../chat/sendInquiryToTeam");
+const { notifyTeamAssigned } = require("../email/notifyInquirer");
 const { ADMIN_ASSIGN_SLA_MS } = require("../config");
 
 const router = express.Router();
@@ -50,6 +51,8 @@ router.post("/inquiries/:id/assign-team", (req, res) => {
 
   const chatInfo = sendInquiryToTeam(store.getById(inquiry.id), team.id);
   store.update(inquiry.id, chatInfo);
+
+  notifyTeamAssigned(store.getById(inquiry.id)); // 매칭 실패가 관리자 수동 배정으로 해결됐을 때만 이메일 발송
 
   res.json(store.getById(inquiry.id));
 });
