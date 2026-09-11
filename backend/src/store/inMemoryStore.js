@@ -23,4 +23,11 @@ function list() {
   return inquiries;
 }
 
-module.exports = { nextInquiryId, create, getById, list };
+function update(id, patch) {
+  const inquiry = getById(id);
+  if (!inquiry) return null;
+  Object.assign(inquiry, patch);
+  return inquiry;
+}
+
+module.exports = { nextInquiryId, create, getById, list, update };

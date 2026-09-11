@@ -28,6 +28,7 @@ router.post("/", (req, res) => {
     createdAt: new Date().toISOString(),
 
     candidateTeams: match.candidateTeams,
+    matchedTeamId: match.matchedTeamId, // 스케줄러가 리마인드 보낼 스페이스를 찾는 데 사용 (내부용)
     matchedTeam: match.matchedTeamName,
     matchConfidence: match.matchConfidence,
     matchFailed: match.matchFailed,
@@ -38,6 +39,9 @@ router.post("/", (req, res) => {
     chatSentAt: null,
     completedAt: null,
     completedBy: null,
+
+    reminderSentAt: null,
+    escalatedAt: null,
 
     surveyReady: false,
     surveyReadyAt: null,

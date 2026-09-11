@@ -21,8 +21,21 @@ function sendMessage(spaceId, inquiry) {
   const sentAt = new Date().toISOString();
   const text = buildMessageText(inquiry);
 
-  log.push({ messageId, spaceId, inquiryId: inquiry.id, text, sentAt });
+  log.push({ type: "initial", messageId, spaceId, inquiryId: inquiry.id, text, sentAt });
   console.log(`[MockChatClient] → ${spaceId}\n${text}\n`);
+
+  return { messageId, sentAt };
+}
+
+// 무응답 타임아웃 리마인드 (5.4절) — 팀장 멘션 메시지를 같은 스페이스에 추가 전송
+function sendReminder(spaceId, inquiry) {
+  seq += 1;
+  const messageId = `mock-msg-${seq}`;
+  const sentAt = new Date().toISOString();
+  const text = `@팀장님 [${inquiry.id}] "${inquiry.title}" 문의가 아직 처리되지 않았습니다. 확인 부탁드립니다.`;
+
+  log.push({ type: "reminder", messageId, spaceId, inquiryId: inquiry.id, text, sentAt });
+  console.log(`[MockChatClient][reminder] → ${spaceId}\n${text}\n`);
 
   return { messageId, sentAt };
 }
@@ -31,4 +44,4 @@ function getLog() {
   return log;
 }
 
-module.exports = { sendMessage, getLog };
+module.exports = { sendMessage, sendReminder, getLog };
