@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<title>문의게시판</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div class="container">
+  <h1>문의 작성</h1>
+
+  <form id="inquiry-form">
+    <label for="author">작성자</label>
+    <input type="text" id="author" placeholder="이름을 입력하세요" required />
+
+    <label for="contact">연락처</label>
+    <input type="text" id="contact" placeholder="이메일 또는 휴대폰 번호를 입력하세요" required />
+
+    <label for="title">문의 제목</label>
+    <input type="text" id="title" placeholder="문의 제목을 입력하세요" required />
+
+    <label for="content">문의 내용</label>
+    <textarea id="content" placeholder="문의 내용을 입력하세요" required></textarea>
+
+    <div class="notice">
+      ⚠️ 해당 문의사항은 유관 부서 팀 전체에 전달됩니다. 급여, 인사평가, 법적 분쟁 등 민감정보가 포함된 문의는
+      담당자 지정 시 추후 문의해주세요.
+    </div>
+
+    <button type="submit">확인</button>
+  </form>
+
+  <div id="result" class="result hidden"></div>
+</div>
+
+<div class="container admin-demo">
+  <h2>관리자 데모 (정식 관리자 페이지 대체 — 흐름 검증용)</h2>
+
+  <h3>완료됐지만 설문 미발송</h3>
+  <div id="admin-survey-pending"></div>
+
+  <h3>매칭 실패(미배정)</h3>
+  <div id="admin-unassigned"></div>
+</div>
+
+<div id="survey-modal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <h2>만족도 조사</h2>
+    <p id="survey-modal-summary" class="muted"></p>
+
+    <form id="survey-modal-form">
+      <label>문의 처리 과정에 만족하셨나요?</label>
+      <div class="radio-group">
+        <label><input type="radio" name="satisfaction" value="1" required /> 1</label>
+        <label><input type="radio" name="satisfaction" value="2" /> 2</label>
+        <label><input type="radio" name="satisfaction" value="3" /> 3</label>
+        <label><input type="radio" name="satisfaction" value="4" /> 4</label>
+        <label><input type="radio" name="satisfaction" value="5" /> 5</label>
+      </div>
+
+      <label>처음 연결된 팀이 올바른 담당 팀이었나요?</label>
+      <div class="radio-group">
+        <label><input type="radio" name="matchCorrect" value="yes" required /> 예</label>
+        <label><input type="radio" name="matchCorrect" value="no" /> 아니오</label>
+      </div>
+
+      <label for="survey-modal-comment">개선 의견 (선택)</label>
+      <textarea id="survey-modal-comment" placeholder="자유롭게 의견을 남겨주세요"></textarea>
+
+      <button type="submit">제출</button>
+    </form>
+  </div>
+</div>
+
+<script type="module" src="js/inquiry.js"></script>
+<script type="module">
+  import { refreshAdminDemo } from "./js/admin-demo.js";
+  import { checkAndShowSurveyPopup } from "./js/survey-popup.js";
+
+  window.refreshAdminDemo = refreshAdminDemo;
+  refreshAdminDemo();
+  checkAndShowSurveyPopup();
+</script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "name": "inquiry-routing-backend",
+  "version": "0.0.1",
+  "private": true,
+  "description": "문의 라우팅 자동화 백엔드 (PoC, 스캐폴딩 단계)",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

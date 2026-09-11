@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<title>만족도 조사</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div class="container">
+  <h1>만족도 조사</h1>
+  <p id="inquiry-summary" class="muted"></p>
+
+  <form id="survey-form">
+    <label>문의 처리 과정에 만족하셨나요?</label>
+    <div class="radio-group" id="satisfaction-group">
+      <label><input type="radio" name="satisfaction" value="1" required /> 1</label>
+      <label><input type="radio" name="satisfaction" value="2" /> 2</label>
+      <label><input type="radio" name="satisfaction" value="3" /> 3</label>
+      <label><input type="radio" name="satisfaction" value="4" /> 4</label>
+      <label><input type="radio" name="satisfaction" value="5" /> 5</label>
+    </div>
+
+    <label>처음 연결된 팀이 올바른 담당 팀이었나요?</label>
+    <div class="radio-group">
+      <label><input type="radio" name="matchCorrect" value="yes" required /> 예</label>
+      <label><input type="radio" name="matchCorrect" value="no" /> 아니오</label>
+    </div>
+
+    <label for="comment">개선 의견 (선택)</label>
+    <textarea id="comment" placeholder="자유롭게 의견을 남겨주세요"></textarea>
+
+    <button type="submit">제출</button>
+  </form>
+
+  <div id="result" class="result success hidden">
+    <p>설문에 응답해주셔서 감사합니다.</p>
+  </div>
+</div>
+
+<script type="module" src="js/survey.js"></script>
+</body>
+</html>
