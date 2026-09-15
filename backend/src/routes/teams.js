@@ -30,7 +30,7 @@ router.get("/:id/config", (req, res) => {
 
 // 12-5: keywords/description/webhookUrl 저장 (webhookUrl 미전달 시 기존 값 유지)
 router.put("/:id/config", (req, res) => {
-  const { keywords, description, webhookUrl } = req.body || {};
+  const { keywords, description, webhookUrl } = req.body;
   if (keywords !== undefined && !Array.isArray(keywords)) {
     return res.status(400).json({ error: "keywords는 배열이어야 합니다." });
   }

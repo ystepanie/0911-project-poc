@@ -15,7 +15,7 @@ const { nowIso } = require("../utils/time");
 const router = express.Router();
 
 router.post("/", upload.single("image"), async (req, res) => {
-  const { author, contact, title, content } = req.body || {};
+  const { author, contact, title, content } = req.body;
 
   if (!author || !contact || !title || !content) {
     return res.status(400).json({ error: "author, contact, title, content는 필수입니다." });
@@ -138,7 +138,7 @@ router.get("/:id", (req, res) => {
 // 담당자 배정 (팀 배정 → 완료 사이 단계, 순서 강제 없음 — 완료 처리 전/후 아무 때나 호출 가능)
 // 담당자 후보 명단은 teamRepository.getTeamMembers()가 제공 (지금은 team-members.json 하드코딩, 후속 과제로 실 DB 연동)
 router.post("/:id/assignee", (req, res) => {
-  const { assigneeId } = req.body || {};
+  const { assigneeId } = req.body;
   const inquiry = requireInquiry(req, res);
   if (!inquiry) return;
 
@@ -164,7 +164,7 @@ router.post("/:id/assignee", (req, res) => {
 
 // 8-4: 관리자가 설문 발송을 확정 (자동 발송 대신 수동 확정)
 router.post("/:id/survey-ready", (req, res) => {
-  const { adminEmail } = req.body || {};
+  const { adminEmail } = req.body;
   const inquiry = requireInquiry(req, res);
   if (!inquiry) return;
 
@@ -183,7 +183,7 @@ router.post("/:id/survey-ready", (req, res) => {
 });
 
 router.post("/:id/survey", (req, res) => {
-  const { satisfaction, matchCorrect, comment } = req.body || {};
+  const { satisfaction, matchCorrect, comment } = req.body;
   const inquiry = requireInquiry(req, res);
   if (!inquiry) return;
 

@@ -28,7 +28,7 @@ router.get("/unassigned", (req, res) => {
 
 // 8-2: 관리자 수동 팀 배정 → 정상 플로우(Chat 전송) 재진입
 router.post("/inquiries/:id/assign-team", async (req, res) => {
-  const { teamId } = req.body || {};
+  const { teamId } = req.body;
   const inquiry = requireInquiry(req, res);
   if (!inquiry) return;
 

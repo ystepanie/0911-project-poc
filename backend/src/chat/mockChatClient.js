@@ -3,19 +3,15 @@
 // liveChatClient.js와 동일한 인터페이스(sendMessage/sendReminder(team, inquiry))를 유지한다.
 
 const { buildInitialMessage, buildReminderMessage } = require("./messageBuilder");
-const { nowIso } = require("../utils/time");
+const { createMockLog } = require("../utils/mockLog");
 
-let seq = 0;
-const log = [];
+const mockLog = createMockLog("mock-msg");
 
 // interface ChatClient { sendMessage(team, inquiry): Promise<{ messageId, sentAt }> }
 async function sendMessage(team, inquiry) {
-  seq += 1;
-  const messageId = `mock-msg-${seq}`;
-  const sentAt = nowIso();
   const text = buildInitialMessage(inquiry);
+  const { messageId, sentAt } = mockLog.record({ type: "initial", team: team.name, inquiryId: inquiry.id, text });
 
-  log.push({ type: "initial", messageId, team: team.name, inquiryId: inquiry.id, text, sentAt });
   console.log(`[MockChatClient] → ${team.name}\n${text}\n`);
 
   return { messageId, sentAt };
@@ -23,19 +19,16 @@ async function sendMessage(team, inquiry) {
 
 // 무응답 타임아웃 리마인드 (5.4절) — 팀장 멘션 메시지를 같은 스페이스에 추가 전송
 async function sendReminder(team, inquiry) {
-  seq += 1;
-  const messageId = `mock-msg-${seq}`;
-  const sentAt = nowIso();
   const text = buildReminderMessage(inquiry);
+  const { messageId, sentAt } = mockLog.record({ type: "reminder", team: team.name, inquiryId: inquiry.id, text });
 
-  log.push({ type: "reminder", messageId, team: team.name, inquiryId: inquiry.id, text, sentAt });
   console.log(`[MockChatClient][reminder] → ${team.name}\n${text}\n`);
 
   return { messageId, sentAt };
 }
 
 function getLog() {
-  return log;
+  return mockLog.getLog();
 }
 
 module.exports = { sendMessage, sendReminder, getLog };

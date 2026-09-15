@@ -40,9 +40,22 @@ function writeTeamConfig(config) {
   teamConfigCache = config;
 }
 
-function flattenLeaves(node, acc = []) {
-  if (node.isTeam) acc.push(node);
-  if (node.children) node.children.forEach((child) => flattenLeaves(child, acc));
+// 조직도(org-chart.json) 트리를 순회하는 공용 워커 — 리프(isTeam) 노드마다 mapLeaf(node)로 변환한
+// 결과로 바꿔 끼우고, 그룹 노드는 children을 재귀적으로 변환한 새 트리를 반환한다.
+// flattenLeaves()(평탄화)와 getOrgChartWithStatus()(hasConfig 주석 달기)가 각자 만들던
+// 비슷한 재귀 순회 로직을 이걸로 통일한다.
+function mapOrgTree(node, mapLeaf) {
+  if (node.isTeam) return mapLeaf(node);
+  if (node.children) return { ...node, children: node.children.map((child) => mapOrgTree(child, mapLeaf)) };
+  return node;
+}
+
+function flattenLeaves(root) {
+  const acc = [];
+  mapOrgTree(root, (leaf) => {
+    acc.push(leaf);
+    return leaf;
+  });
   return acc;
 }
 
@@ -82,17 +95,11 @@ function getWebhookUrl(id) {
 function getOrgChartWithStatus() {
   const config = readTeamConfig();
 
-  function annotate(node) {
-    if (node.isTeam) {
-      const teamConfig = config[node.id] || {};
-      const hasConfig = Boolean((teamConfig.keywords && teamConfig.keywords.length) || teamConfig.webhookUrl);
-      return { ...node, hasConfig };
-    }
-    if (node.children) return { ...node, children: node.children.map(annotate) };
-    return node;
-  }
-
-  return annotate(readOrgChart());
+  return mapOrgTree(readOrgChart(), (node) => {
+    const teamConfig = config[node.id] || {};
+    const hasConfig = Boolean((teamConfig.keywords && teamConfig.keywords.length) || teamConfig.webhookUrl);
+    return { ...node, hasConfig };
+  });
 }
 
 // 관리자 페이지 편집 폼이 쓰는 조회 — 웹훅은 마스킹된 미리보기만 내려준다

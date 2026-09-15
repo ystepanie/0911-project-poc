@@ -15,6 +15,12 @@ const { UPLOAD_DIR } = require("./upload/uploadMiddleware");
 const app = express();
 app.use(cors()); // PoC 단계: 모든 origin 허용. 운영 배포 시 프론트 도메인으로 제한 필요
 app.use(express.json());
+// Content-Type이 application/json이 아닌 요청(빈 바디로 오는 POST 등)은 express.json()이 건드리지 않아
+// req.body가 undefined로 남는다 — 라우트 핸들러마다 `req.body || {}`를 반복하지 않도록 여기서 보장해둔다.
+app.use((req, res, next) => {
+  if (req.body === undefined) req.body = {};
+  next();
+});
 app.use("/uploads", express.static(UPLOAD_DIR)); // 11-5: 첨부 이미지 정적 서빙
 
 app.get("/health", (req, res) => {

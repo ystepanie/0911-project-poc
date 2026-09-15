@@ -13,7 +13,7 @@ const { nowIso } = require("../utils/time");
 const router = express.Router();
 
 router.post("/", (req, res) => {
-  const { inquiryId, actorEmail } = req.body || {};
+  const { inquiryId, actorEmail } = req.body;
 
   if (!inquiryId || !actorEmail) {
     return res.status(400).json({ error: "inquiryId, actorEmail은 필수입니다." });

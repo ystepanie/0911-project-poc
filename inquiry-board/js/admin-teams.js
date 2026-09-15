@@ -89,9 +89,17 @@ function renderForm(teamId, teamName, config) {
     <p id="save-status" class="muted"></p>
   `;
 
+  // innerHTML을 새로 그릴 때마다 이 호출 안에서만 쓸 참조를 한 번씩만 조회해 캐싱한다
+  // (매 핸들러마다 document.getElementById를 반복하지 않도록).
+  const chipTextEl = document.getElementById("chip-text");
+  const chipListEl = document.getElementById("chip-list");
+  const webhookInputEl = document.getElementById("webhook-input");
+  const descriptionEl = document.getElementById("description");
+  const saveStatusEl = document.getElementById("save-status");
+
   renderChips(keywords);
 
-  document.getElementById("chip-text").addEventListener("keydown", (e) => {
+  chipTextEl.addEventListener("keydown", (e) => {
     if (e.key !== "Enter") return;
     e.preventDefault();
     const value = e.target.value.trim();
@@ -103,7 +111,6 @@ function renderForm(teamId, teamName, config) {
   });
 
   function renderChips(list) {
-    const chipListEl = document.getElementById("chip-list");
     chipListEl.innerHTML = list
       .map(
         (kw, i) =>
@@ -119,38 +126,35 @@ function renderForm(teamId, teamName, config) {
   }
 
   document.getElementById("webhook-change-btn").addEventListener("click", () => {
-    document.getElementById("webhook-input").classList.remove("hidden");
-    document.getElementById("webhook-input").focus();
+    webhookInputEl.classList.remove("hidden");
+    webhookInputEl.focus();
   });
 
   document.getElementById("test-webhook-btn").addEventListener("click", async (e) => {
     e.target.disabled = true;
-    const statusEl = document.getElementById("save-status");
     try {
       await testTeamWebhook(teamId);
-      statusEl.textContent = "테스트 메시지를 전송했습니다.";
+      saveStatusEl.textContent = "테스트 메시지를 전송했습니다.";
     } catch (err) {
-      statusEl.textContent = `테스트 전송 실패: ${err.message}`;
+      saveStatusEl.textContent = `테스트 전송 실패: ${err.message}`;
     } finally {
       e.target.disabled = false;
     }
   });
 
   document.getElementById("save-btn").addEventListener("click", async () => {
-    const description = document.getElementById("description").value.trim();
-    const webhookInput = document.getElementById("webhook-input");
-    const webhookUrl = webhookInput.classList.contains("hidden") ? undefined : webhookInput.value.trim();
+    const description = descriptionEl.value.trim();
+    const webhookUrl = webhookInputEl.classList.contains("hidden") ? undefined : webhookInputEl.value.trim();
 
-    const statusEl = document.getElementById("save-status");
-    statusEl.textContent = "저장 중...";
+    saveStatusEl.textContent = "저장 중...";
 
     try {
       const updated = await saveTeamConfig(teamId, { keywords, description, webhookUrl });
-      statusEl.textContent = "저장했습니다.";
+      saveStatusEl.textContent = "저장했습니다.";
       renderForm(teamId, teamName, updated);
       await loadOrgTree(); // 트리의 hasConfig 표시 갱신
     } catch (err) {
-      statusEl.textContent = `저장 실패: ${err.message}`;
+      saveStatusEl.textContent = `저장 실패: ${err.message}`;
     }
   });
 }
