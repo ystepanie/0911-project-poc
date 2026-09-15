@@ -1,4 +1,4 @@
-import { submitInquiry, completeInquiry, resolveUploadUrl } from "./api.js";
+import { submitInquiry, resolveUploadUrl } from "./api.js";
 import { renderAttachmentHtml, escapeHtml } from "./inquiryStatus.js";
 
 const form = document.getElementById("inquiry-form");
@@ -55,13 +55,5 @@ function renderResult(inquiry) {
     <p>문의가 <span class="team">${escapeHtml(inquiry.matchedTeam)}</span>(으)로 전달되었습니다. (매칭 신뢰도: ${(inquiry.matchConfidence * 100).toFixed(0)}%)</p>
     <p class="muted">Google Chat 전송 완료로 처리되었습니다. (mock)</p>
     ${attachmentHtml}
-    <button type="button" id="complete-btn">완료 처리 시뮬레이션</button>
   `;
-
-  document.getElementById("complete-btn").addEventListener("click", async (ev) => {
-    ev.target.disabled = true;
-    await completeInquiry(inquiry.id);
-    ev.target.outerHTML =
-      '<p class="muted">완료 처리되었습니다. 관리자가 설문 발송을 확정하면 다음 접속 시 만족도 조사가 안내됩니다.</p>';
-  });
 }
