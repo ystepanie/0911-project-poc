@@ -57,6 +57,11 @@ export async function getInquiry(inquiryId) {
   return request(`/inquiries/${encodeURIComponent(inquiryId)}`);
 }
 
+// 상세 페이지(admin-detail.html)용 — 순차 ID 대신 랜덤 accessToken으로 조회 (다른 문의 순회 방지)
+export async function getInquiryByToken(token) {
+  return request(`/inquiries/by-token/${encodeURIComponent(token)}`);
+}
+
 export async function completeInquiry(inquiryId) {
   return request("/chat/events", {
     method: "POST",

@@ -3,6 +3,7 @@
 // Phase 9(DB/실 서버 연동)에서 프론트가 fetch 호출로만 바꾸면 되도록 한다.
 
 const express = require("express");
+const crypto = require("crypto");
 const teams = require("../matching/teams-seed.json");
 const { matchInquiry } = require("../matching");
 const store = require("../store/inMemoryStore");
@@ -23,6 +24,7 @@ router.post("/", upload.single("image"), async (req, res) => {
 
   const inquiry = {
     id: store.nextInquiryId(),
+    accessToken: crypto.randomUUID(), // 상세 페이지 링크용 — 순차 ID 대신 이걸로 조회해 다른 문의 순회를 막는다
     author,
     contact,
     title,
@@ -91,6 +93,16 @@ router.get("/pending-survey", (req, res) => {
     .find((item) => item.contact === contact && item.surveyReady && !item.survey.answeredAt);
 
   res.json(inquiry || null);
+});
+
+// 상세 페이지(admin-detail.html)가 사용하는 조회 경로 — 순차 ID가 아니라 랜덤 accessToken으로 찾는다.
+// "/:id"보다 먼저 선언해야 "by-token"이 :id로 잡히지 않는다.
+router.get("/by-token/:token", (req, res) => {
+  const inquiry = store.list().find((item) => item.accessToken === req.params.token);
+  if (!inquiry) {
+    return res.status(404).json({ error: "존재하지 않거나 만료된 링크입니다." });
+  }
+  res.json(inquiry);
 });
 
 router.get("/:id", (req, res) => {
