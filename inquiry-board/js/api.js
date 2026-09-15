@@ -78,6 +78,21 @@ export async function assignInquiryOwner(inquiryId, assigneeId) {
   });
 }
 
+// 관리자 상세 페이지(admin-detail.html)의 취소 기능 — 백엔드의 CANCEL_REASONS(routes/inquiries.js)와 키를 맞춘다.
+export const CANCEL_REASON_OPTIONS = [
+  { value: "duplicate", label: "중복 문의" },
+  { value: "requester_withdrew", label: "문의자 철회 요청" },
+  { value: "cannot_process", label: "처리 불가" },
+  { value: "other", label: "기타" },
+];
+
+export async function cancelInquiry(inquiryId, { category, detail }) {
+  return request(`/inquiries/${encodeURIComponent(inquiryId)}/cancel`, {
+    method: "POST",
+    body: JSON.stringify({ category, detail, actorEmail: DEMO_ACTOR_EMAIL }),
+  });
+}
+
 export async function submitSurvey(inquiryId, { satisfaction, matchCorrect, comment }) {
   return request(`/inquiries/${encodeURIComponent(inquiryId)}/survey`, {
     method: "POST",

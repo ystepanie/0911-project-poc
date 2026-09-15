@@ -14,6 +14,14 @@ const { nowIso } = require("../utils/time");
 
 const router = express.Router();
 
+// 취소 사유 카테고리 (담당자가 상세 페이지에서 취소 시 선택) — 사용자 결정사항으로 기본 4종만 둔다.
+const CANCEL_REASONS = {
+  duplicate: "중복 문의",
+  requester_withdrew: "문의자 철회 요청",
+  cannot_process: "처리 불가",
+  other: "기타",
+};
+
 router.post("/", upload.single("image"), async (req, res) => {
   const { author, contact, title, content } = req.body;
 
@@ -49,6 +57,11 @@ router.post("/", upload.single("image"), async (req, res) => {
     chatSendError: null,
     completedAt: null,
     completedBy: null,
+
+    cancelledAt: null, // 관리자 상세 페이지 취소 기능 (완료 처리 전까지만 가능)
+    cancelledBy: null,
+    cancelReason: null,
+    cancelDetail: null,
 
     reminderSentAt: null,
     escalatedAt: null,
@@ -145,6 +158,9 @@ router.post("/:id/assignee", (req, res) => {
   if (inquiry.matchFailed || !inquiry.matchedTeamId) {
     return res.status(409).json({ error: "팀이 배정되지 않은 문의에는 담당자를 지정할 수 없습니다." });
   }
+  if (inquiry.cancelledAt) {
+    return res.status(409).json({ error: "취소된 문의에는 담당자를 지정할 수 없습니다." });
+  }
 
   const members = teamRepository.getTeamMembers(inquiry.matchedTeamId);
   const member = members.find((m) => m.id === assigneeId);
@@ -158,6 +174,43 @@ router.post("/:id/assignee", (req, res) => {
     assigneeAssignedAt: nowIso(),
   });
   store.appendStatusLog(inquiry.id, "assignee_assigned", `담당자로 ${member.name} 지정`);
+
+  res.json(inquiry);
+});
+
+// 문의 취소 (관리자 상세 페이지 전용 기능) — 팀이 배정된 문의만, 완료 처리 전까지만 취소 가능
+// (사용자 결정사항: 매칭 실패 건은 아직 담당자가 없어 취소 대상이 아니고, 완료된 건은 취소와 상호 배타적 최종 상태로 취급)
+router.post("/:id/cancel", (req, res) => {
+  const { category, detail, actorEmail } = req.body;
+  const inquiry = requireInquiry(req, res);
+  if (!inquiry) return;
+
+  if (inquiry.matchFailed || !inquiry.matchedTeamId) {
+    return res.status(409).json({ error: "팀이 배정되지 않은 문의는 취소할 수 없습니다." });
+  }
+  if (inquiry.completedAt) {
+    return res.status(409).json({ error: "이미 완료 처리된 문의는 취소할 수 없습니다." });
+  }
+  if (inquiry.cancelledAt) {
+    return res.json(inquiry); // 이미 취소된 건 — 멱등하게 그대로 반환
+  }
+  if (!CANCEL_REASONS[category]) {
+    return res.status(400).json({ error: "올바르지 않은 취소 사유 카테고리입니다." });
+  }
+
+  const trimmedDetail = (detail || "").trim();
+
+  store.update(inquiry.id, {
+    cancelledAt: nowIso(),
+    cancelledBy: actorEmail || null,
+    cancelReason: category,
+    cancelDetail: trimmedDetail,
+  });
+  store.appendStatusLog(
+    inquiry.id,
+    "cancelled",
+    `문의 취소 (사유: ${CANCEL_REASONS[category]}${trimmedDetail ? ` - ${trimmedDetail}` : ""})`
+  );
 
   res.json(inquiry);
 });

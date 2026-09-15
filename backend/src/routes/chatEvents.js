@@ -27,6 +27,9 @@ router.post("/", (req, res) => {
   if (inquiry.matchFailed) {
     return res.status(409).json({ error: "매칭 실패 건은 완료 처리할 수 없습니다. 먼저 팀을 배정해주세요." });
   }
+  if (inquiry.cancelledAt) {
+    return res.status(409).json({ error: "취소된 문의는 완료 처리할 수 없습니다." });
+  }
   if (inquiry.completedAt) {
     return res.json(inquiry); // 이미 완료 처리된 건 — 멱등하게 그대로 반환
   }
