@@ -2,7 +2,7 @@
 // ✅ 리액션 대신, 이 페이지에서 전체 내용/이미지를 보고 완료 처리 버튼을 누르는 방식으로 완료 트리거를 대체한다.
 
 import { getInquiryByToken, completeInquiry, resolveUploadUrl, getTeamMembers, assignInquiryOwner } from "./api.js";
-import { renderStatusLogHtml } from "./inquiryStatus.js";
+import { renderStatusLogHtml, renderAttachmentHtml } from "./inquiryStatus.js";
 
 const detailEl = document.getElementById("detail");
 const params = new URLSearchParams(window.location.search);
@@ -27,10 +27,7 @@ async function render() {
     return;
   }
 
-  const imageUrl = resolveUploadUrl(inquiry.imageUrl);
-  const imageHtml = imageUrl
-    ? `<p><a href="${imageUrl}" target="_blank" rel="noopener"><img src="${imageUrl}" alt="첨부 이미지" style="max-width:100%;border-radius:4px;" /></a></p>`
-    : "";
+  const imageHtml = renderAttachmentHtml(resolveUploadUrl(inquiry.imageUrl));
 
   const statusHtml = inquiry.completedAt
     ? `<p class="muted">완료 처리됨 (${new Date(inquiry.completedAt).toLocaleString()}, 처리자: ${inquiry.completedBy ?? "-"})</p>`

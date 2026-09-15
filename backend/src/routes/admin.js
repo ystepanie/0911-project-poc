@@ -7,6 +7,7 @@ const store = require("../store/inMemoryStore");
 const { sendInquiryToTeam } = require("../chat/sendInquiryToTeam");
 const { notifyTeamAssigned } = require("../email/notifyInquirer");
 const { ADMIN_ASSIGN_SLA_MS } = require("../config");
+const { requireInquiry } = require("./helpers");
 
 const router = express.Router();
 
@@ -28,11 +29,9 @@ router.get("/unassigned", (req, res) => {
 // 8-2: 관리자 수동 팀 배정 → 정상 플로우(Chat 전송) 재진입
 router.post("/inquiries/:id/assign-team", async (req, res) => {
   const { teamId } = req.body || {};
-  const inquiry = store.getById(req.params.id);
+  const inquiry = requireInquiry(req, res);
+  if (!inquiry) return;
 
-  if (!inquiry) {
-    return res.status(404).json({ error: "존재하지 않는 문의 ID입니다." });
-  }
   if (!inquiry.matchFailed) {
     return res.status(409).json({ error: "이미 매칭된 문의입니다." });
   }
@@ -50,18 +49,12 @@ router.post("/inquiries/:id/assign-team", async (req, res) => {
   });
   store.appendStatusLog(inquiry.id, "team_assigned_manual", `관리자가 ${team.name}으로 수동 배정`);
 
-  try {
-    const chatInfo = await sendInquiryToTeam(store.getById(inquiry.id), team.id);
-    store.update(inquiry.id, chatInfo);
-  } catch (err) {
-    console.error(`[assign-team] Chat 전송 실패: ${err.message}`);
-    store.update(inquiry.id, { chatSendError: err.message });
-    store.appendStatusLog(inquiry.id, "chat_send_failed", `Chat 전송 실패 (${err.message})`);
-  }
+  // Chat 전송 성공/실패 처리(chatSendError/상태 로그 반영)는 sendInquiryToTeam 내부에서 처리한다.
+  await sendInquiryToTeam(inquiry, team.id);
 
-  notifyTeamAssigned(store.getById(inquiry.id)); // 매칭 실패가 관리자 수동 배정으로 해결됐을 때만 이메일 발송
+  notifyTeamAssigned(inquiry); // 매칭 실패가 관리자 수동 배정으로 해결됐을 때만 이메일 발송
 
-  res.json(store.getById(inquiry.id));
+  res.json(inquiry);
 });
 
 // 8-3: 완료됐지만 설문 미발송인 건 목록

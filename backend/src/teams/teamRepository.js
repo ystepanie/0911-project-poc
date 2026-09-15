@@ -11,17 +11,33 @@ const ORG_CHART_PATH = path.join(DATA_DIR, "org-chart.json");
 const TEAM_CONFIG_PATH = path.join(DATA_DIR, "team-config.json");
 const TEAM_MEMBERS_PATH = path.join(DATA_DIR, "team-members.json");
 
+// 세 데이터 파일 모두 실행 중에는 거의 안 바뀌는데 getAllTeams() 등이 요청마다 이 함수들을 호출하므로,
+// 최초 1회만 읽고 캐싱한다. team-config.json은 이 모듈을 거쳐서만 쓰기 때문에 writeTeamConfig()에서
+// 캐시를 함께 갱신하면 되지만, org-chart.json/team-members.json은 파일을 직접 수정한 경우
+// 서버 재시작 전까지는 반영되지 않는다(둘 다 지금은 쓰기 API가 없는 정적 데이터라 이 제약이 실질적 문제는 아님).
+let orgChartCache = null;
+let teamConfigCache = null;
+let teamMembersCache = null;
+
 function readOrgChart() {
-  return JSON.parse(fs.readFileSync(ORG_CHART_PATH, "utf-8"));
+  if (!orgChartCache) {
+    orgChartCache = JSON.parse(fs.readFileSync(ORG_CHART_PATH, "utf-8"));
+  }
+  return orgChartCache;
 }
 
 function readTeamConfig() {
-  if (!fs.existsSync(TEAM_CONFIG_PATH)) return {};
-  return JSON.parse(fs.readFileSync(TEAM_CONFIG_PATH, "utf-8"));
+  if (!teamConfigCache) {
+    teamConfigCache = fs.existsSync(TEAM_CONFIG_PATH)
+      ? JSON.parse(fs.readFileSync(TEAM_CONFIG_PATH, "utf-8"))
+      : {};
+  }
+  return teamConfigCache;
 }
 
 function writeTeamConfig(config) {
   fs.writeFileSync(TEAM_CONFIG_PATH, JSON.stringify(config, null, 2), "utf-8");
+  teamConfigCache = config;
 }
 
 function flattenLeaves(node, acc = []) {
@@ -50,8 +66,10 @@ function getTeamById(id) {
 
 // 담당자 배정 드롭다운용 — 실제로는 회사 인사 DB에서 조회할 데이터를 team-members.json으로 하드코딩 대체 (테스트용, 후속 과제)
 function getTeamMembers(id) {
-  const all = JSON.parse(fs.readFileSync(TEAM_MEMBERS_PATH, "utf-8"));
-  return all[id] || [];
+  if (!teamMembersCache) {
+    teamMembersCache = JSON.parse(fs.readFileSync(TEAM_MEMBERS_PATH, "utf-8"));
+  }
+  return teamMembersCache[id] || [];
 }
 
 // Chat 전송용 — 비밀값이라 getAllTeams()에는 포함하지 않고 이 함수로만 꺼낸다

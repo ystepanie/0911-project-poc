@@ -9,6 +9,7 @@ const { matchInquiry } = require("../matching");
 const store = require("../store/inMemoryStore");
 const { sendInquiryToTeam } = require("../chat/sendInquiryToTeam");
 const { upload } = require("../upload/uploadMiddleware"); // 11-2: 이미지 첨부 (JSON 요청이면 그냥 통과됨)
+const { requireInquiry } = require("./helpers");
 
 const router = express.Router();
 
@@ -66,38 +67,27 @@ router.post("/", upload.single("image"), async (req, res) => {
       answeredAt: null,
     },
 
-    // 문의 하나의 전체 생명주기를 시간순으로 남기는 로그 (사용자 요청사항)
-    statusLog: [{ at: new Date().toISOString(), event: "created", detail: `문의 접수 (작성자: ${author})` }],
+    // 문의 하나의 전체 생명주기를 시간순으로 남기는 로그 (사용자 요청사항) — 아래에서 store.appendStatusLog로 채운다.
+    statusLog: [],
   };
 
-  inquiry.statusLog.push(
+  // 스토어에 먼저 등록해야 이후 store.appendStatusLog/sendInquiryToTeam이 id로 조회할 수 있다.
+  store.create(inquiry);
+  store.appendStatusLog(inquiry.id, "created", `문의 접수 (작성자: ${author})`);
+  store.appendStatusLog(
+    inquiry.id,
+    match.matchFailed ? "match_failed" : "matched",
     match.matchFailed
-      ? { at: new Date().toISOString(), event: "match_failed", detail: `매칭 실패 (사유: ${match.failReason})` }
-      : {
-          at: new Date().toISOString(),
-          event: "matched",
-          detail: `${match.matchedTeamName}으로 자동 매칭 (신뢰도 ${(match.matchConfidence * 100).toFixed(0)}%)`,
-        }
+      ? `매칭 실패 (사유: ${match.failReason})`
+      : `${match.matchedTeamName}으로 자동 매칭 (신뢰도 ${(match.matchConfidence * 100).toFixed(0)}%)`
   );
 
   // 문의 결과는 이 응답으로 화면에 바로 표시되므로, 제출 시점에는 이메일을 보내지 않는다.
   // 실패 건이 관리자 수동 배정으로 해결됐을 때만 이메일 발송 (routes/admin.js assign-team 참고).
+  // Chat 전송 성공/실패 처리는 sendInquiryToTeam 내부에서 스토어에 직접 반영한다.
   if (!match.matchFailed) {
-    try {
-      Object.assign(inquiry, await sendInquiryToTeam(inquiry, match.matchedTeamId));
-    } catch (err) {
-      // 실 Chat 웹훅 전송 실패(네트워크/URL 오류 등) — 문의 자체는 등록하되 전송 실패를 남겨 관리자가 확인하게 함
-      console.error(`[POST /api/inquiries] Chat 전송 실패: ${err.message}`);
-      inquiry.chatSendError = err.message;
-      inquiry.statusLog.push({
-        at: new Date().toISOString(),
-        event: "chat_send_failed",
-        detail: `Chat 전송 실패 (${err.message})`,
-      });
-    }
+    await sendInquiryToTeam(inquiry, match.matchedTeamId);
   }
-
-  store.create(inquiry);
 
   res.status(201).json(inquiry);
 });
@@ -144,10 +134,8 @@ router.get("/by-token/:token", (req, res) => {
 });
 
 router.get("/:id", (req, res) => {
-  const inquiry = store.getById(req.params.id);
-  if (!inquiry) {
-    return res.status(404).json({ error: "존재하지 않는 문의 ID입니다." });
-  }
+  const inquiry = requireInquiry(req, res);
+  if (!inquiry) return;
   res.json(inquiry);
 });
 
@@ -155,11 +143,9 @@ router.get("/:id", (req, res) => {
 // 담당자 후보 명단은 teamRepository.getTeamMembers()가 제공 (지금은 team-members.json 하드코딩, 후속 과제로 실 DB 연동)
 router.post("/:id/assignee", (req, res) => {
   const { assigneeId } = req.body || {};
-  const inquiry = store.getById(req.params.id);
+  const inquiry = requireInquiry(req, res);
+  if (!inquiry) return;
 
-  if (!inquiry) {
-    return res.status(404).json({ error: "존재하지 않는 문의 ID입니다." });
-  }
   if (inquiry.matchFailed || !inquiry.matchedTeamId) {
     return res.status(409).json({ error: "팀이 배정되지 않은 문의에는 담당자를 지정할 수 없습니다." });
   }
@@ -177,17 +163,15 @@ router.post("/:id/assignee", (req, res) => {
   });
   store.appendStatusLog(inquiry.id, "assignee_assigned", `담당자로 ${member.name} 지정`);
 
-  res.json(store.getById(inquiry.id));
+  res.json(inquiry);
 });
 
 // 8-4: 관리자가 설문 발송을 확정 (자동 발송 대신 수동 확정)
 router.post("/:id/survey-ready", (req, res) => {
   const { adminEmail } = req.body || {};
-  const inquiry = store.getById(req.params.id);
+  const inquiry = requireInquiry(req, res);
+  if (!inquiry) return;
 
-  if (!inquiry) {
-    return res.status(404).json({ error: "존재하지 않는 문의 ID입니다." });
-  }
   if (!inquiry.completedAt) {
     return res.status(409).json({ error: "완료 처리되지 않은 문의는 설문을 발송할 수 없습니다." });
   }
@@ -199,16 +183,14 @@ router.post("/:id/survey-ready", (req, res) => {
   });
   store.appendStatusLog(inquiry.id, "survey_ready", "만족도 조사 발송 확정");
 
-  res.json(store.getById(inquiry.id));
+  res.json(inquiry);
 });
 
 router.post("/:id/survey", (req, res) => {
   const { satisfaction, matchCorrect, comment } = req.body || {};
-  const inquiry = store.getById(req.params.id);
+  const inquiry = requireInquiry(req, res);
+  if (!inquiry) return;
 
-  if (!inquiry) {
-    return res.status(404).json({ error: "존재하지 않는 문의 ID입니다." });
-  }
   if (!inquiry.surveyReady) {
     return res.status(409).json({ error: "설문 발송이 확정되지 않은 문의입니다." });
   }
@@ -223,7 +205,7 @@ router.post("/:id/survey", (req, res) => {
   });
   store.appendStatusLog(inquiry.id, "survey_answered", `만족도 조사 응답 완료 (만족도 ${satisfaction})`);
 
-  res.json(store.getById(inquiry.id));
+  res.json(inquiry);
 });
 
 module.exports = router;

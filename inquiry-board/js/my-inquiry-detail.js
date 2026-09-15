@@ -3,7 +3,7 @@
 // 여기서는 매칭/처리/설문 상태를 조회만 한다.
 
 import { getInquiryByToken, resolveUploadUrl } from "./api.js";
-import { statusDetails, renderStatusLogHtml } from "./inquiryStatus.js";
+import { statusDetails, renderStatusLogHtml, renderAttachmentHtml } from "./inquiryStatus.js";
 
 const detailEl = document.getElementById("detail");
 const params = new URLSearchParams(window.location.search);
@@ -23,10 +23,7 @@ async function init() {
     return;
   }
 
-  const imageUrl = resolveUploadUrl(inquiry.imageUrl);
-  const imageHtml = imageUrl
-    ? `<p><a href="${imageUrl}" target="_blank" rel="noopener"><img src="${imageUrl}" alt="첨부 이미지" style="max-width:100%;border-radius:4px;" /></a></p>`
-    : "";
+  const imageHtml = renderAttachmentHtml(resolveUploadUrl(inquiry.imageUrl));
 
   const statusHtml = statusDetails(inquiry)
     .map((line) => `<p class="status-line">${line}</p>`)

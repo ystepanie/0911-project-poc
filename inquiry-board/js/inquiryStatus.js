@@ -65,6 +65,13 @@ export function statusDetails(inquiry) {
   return lines;
 }
 
+// 첨부 이미지 링크+썸네일 HTML — admin-detail.js/my-inquiry-detail.js 공용.
+// imageUrl은 호출부가 api.js의 resolveUploadUrl()로 절대경로화해서 넘긴다.
+export function renderAttachmentHtml(imageUrl) {
+  if (!imageUrl) return "";
+  return `<p><a href="${imageUrl}" target="_blank" rel="noopener"><img src="${imageUrl}" alt="첨부 이미지" style="max-width:100%;border-radius:4px;" /></a></p>`;
+}
+
 function escapeHtml(str) {
   const div = document.createElement("div");
   div.textContent = str;

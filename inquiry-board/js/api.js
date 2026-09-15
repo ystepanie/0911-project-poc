@@ -13,10 +13,13 @@ export function resolveUploadUrl(imageUrl) {
 // 실제로는 로그인(Google Chat 계정)에서 가져올 값을 임시 고정값으로 대체한다.
 const DEMO_ACTOR_EMAIL = "team-demo@example.com";
 
+// body가 FormData면 브라우저가 boundary를 포함해 Content-Type을 직접 설정해야 하므로
+// 기본 JSON 헤더를 붙이지 않는다 — submitInquiry의 이미지 첨부 분기도 이 함수 하나로 처리한다.
 async function request(path, options = {}) {
+  const isFormData = options.body instanceof FormData;
   const res = await fetch(`${API_BASE}${path}`, {
-    headers: { "Content-Type": "application/json" },
     ...options,
+    headers: isFormData ? options.headers : { "Content-Type": "application/json", ...options.headers },
   });
 
   if (!res.ok) {
@@ -44,12 +47,7 @@ export async function submitInquiry({ author, contact, title, content, imageFile
   formData.append("content", content);
   formData.append("image", imageFile);
 
-  const res = await fetch(`${API_BASE}/inquiries`, { method: "POST", body: formData });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.error || `요청 실패 (${res.status})`);
-  }
-  return res.json();
+  return request("/inquiries", { method: "POST", body: formData });
 }
 
 export async function getInquiry(inquiryId) {

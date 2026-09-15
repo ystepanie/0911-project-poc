@@ -22,6 +22,7 @@ router.post("/", (req, res) => {
   if (!inquiry) {
     return res.status(404).json({ error: "존재하지 않는 문의 ID입니다." });
   }
+
   if (inquiry.matchFailed) {
     return res.status(409).json({ error: "매칭 실패 건은 완료 처리할 수 없습니다. 먼저 팀을 배정해주세요." });
   }
