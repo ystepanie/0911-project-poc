@@ -1,2 +1,5 @@
 uploads/*
 !uploads/.gitkeep
+
+# 팀별 키워드/설명/웹훅 URL — 웹훅 URL이 비밀값이라 커밋하지 않는다 (data/team-config.example.json이 템플릿)
+data/team-config.json

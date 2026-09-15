@@ -14,8 +14,8 @@ async function sendMessage(team, inquiry) {
   const sentAt = new Date().toISOString();
   const text = buildInitialMessage(inquiry);
 
-  log.push({ type: "initial", messageId, spaceId: team.chatSpaceId, inquiryId: inquiry.id, text, sentAt });
-  console.log(`[MockChatClient] → ${team.chatSpaceId}\n${text}\n`);
+  log.push({ type: "initial", messageId, team: team.name, inquiryId: inquiry.id, text, sentAt });
+  console.log(`[MockChatClient] → ${team.name}\n${text}\n`);
 
   return { messageId, sentAt };
 }
@@ -27,8 +27,8 @@ async function sendReminder(team, inquiry) {
   const sentAt = new Date().toISOString();
   const text = buildReminderMessage(inquiry);
 
-  log.push({ type: "reminder", messageId, spaceId: team.chatSpaceId, inquiryId: inquiry.id, text, sentAt });
-  console.log(`[MockChatClient][reminder] → ${team.chatSpaceId}\n${text}\n`);
+  log.push({ type: "reminder", messageId, team: team.name, inquiryId: inquiry.id, text, sentAt });
+  console.log(`[MockChatClient][reminder] → ${team.name}\n${text}\n`);
 
   return { messageId, sentAt };
 }

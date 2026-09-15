@@ -4,7 +4,7 @@
 
 const express = require("express");
 const crypto = require("crypto");
-const teams = require("../matching/teams-seed.json");
+const teamRepository = require("../teams/teamRepository");
 const { matchInquiry } = require("../matching");
 const store = require("../store/inMemoryStore");
 const { sendInquiryToTeam } = require("../chat/sendInquiryToTeam");
@@ -20,7 +20,7 @@ router.post("/", upload.single("image"), async (req, res) => {
   }
 
   // 이미지는 매칭 파이프라인 입력에 포함시키지 않는다 (제목+내용 텍스트만 사용) — Phase 11 설계 원칙
-  const match = matchInquiry(`${title} ${content}`, teams);
+  const match = matchInquiry(`${title} ${content}`, teamRepository.getAllTeams());
 
   const inquiry = {
     id: store.nextInquiryId(),

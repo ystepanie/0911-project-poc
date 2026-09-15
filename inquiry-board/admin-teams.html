@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<title>팀 관리</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div class="container" id="password-gate">
+  <h1>팀 관리</h1>
+  <p class="muted">임시 접근 제어입니다 (로그인 붙기 전까지). 관리자에게 비밀번호를 문의하세요.</p>
+  <label for="password">비밀번호</label>
+  <input type="password" id="password" placeholder="비밀번호를 입력하세요" />
+  <button type="button" id="password-submit">확인</button>
+  <p id="password-error" class="notice hidden">비밀번호가 올바르지 않습니다.</p>
+</div>
+
+<div class="container admin-teams-app hidden" id="app">
+  <h1>팀 관리</h1>
+  <p class="muted">조직도에서 팀을 선택하면 키워드/설명/Chat 웹훅을 등록할 수 있습니다.</p>
+
+  <div class="team-manager">
+    <div class="org-tree" id="org-tree">불러오는 중...</div>
+    <div class="team-form-panel" id="team-form-panel">
+      <p class="muted">왼쪽 조직도에서 팀을 선택하세요.</p>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="js/admin-teams.js"></script>
+</body>
+</html>

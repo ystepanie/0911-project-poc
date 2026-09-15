@@ -4,7 +4,7 @@
 // Pub/Sub 구독이 필요한 별도 작업(후속 과제).
 
 const { buildInitialMessage, buildReminderMessage } = require("./messageBuilder");
-const { getWebhookUrl } = require("./webhookConfig");
+const { getWebhookUrl } = require("../teams/teamRepository");
 
 async function postToWebhook(webhookUrl, text) {
   const res = await fetch(webhookUrl, {
@@ -33,4 +33,11 @@ async function sendReminder(team, inquiry) {
   return { messageId: null, sentAt: new Date().toISOString() };
 }
 
-module.exports = { sendMessage, sendReminder };
+// 관리자 페이지의 "테스트 전송" 버튼용 (체크리스트 12-6)
+async function sendTestMessage(team) {
+  const webhookUrl = getWebhookUrl(team.id);
+  if (!webhookUrl) throw new Error("등록된 웹훅이 없습니다.");
+  await postToWebhook(webhookUrl, `[테스트 메시지] "${team.name}" 채널 연결을 확인합니다.`);
+}
+
+module.exports = { sendMessage, sendReminder, sendTestMessage };

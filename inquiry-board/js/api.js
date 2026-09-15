@@ -113,3 +113,26 @@ export async function assignTeam(inquiryId, teamId) {
 export async function getTeams() {
   return request("/teams");
 }
+
+// 팀 관리자 페이지(admin-teams.html)용 — Phase 12
+
+export async function getOrgChart() {
+  return request("/org-chart");
+}
+
+export async function getTeamConfig(teamId) {
+  return request(`/teams/${encodeURIComponent(teamId)}/config`);
+}
+
+export async function saveTeamConfig(teamId, { keywords, description, webhookUrl }) {
+  const body = { keywords, description };
+  if (webhookUrl !== undefined) body.webhookUrl = webhookUrl;
+  return request(`/teams/${encodeURIComponent(teamId)}/config`, {
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
+}
+
+export async function testTeamWebhook(teamId) {
+  return request(`/teams/${encodeURIComponent(teamId)}/test-webhook`, { method: "POST" });
+}

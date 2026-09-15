@@ -1,0 +1,8 @@
+{
+  "_comment": "이 파일은 템플릿입니다. 실제로 쓰는 파일은 team-config.json(git 미추적)이며, 관리자 페이지(admin-teams.html)에서 저장하면 그 파일이 갱신됩니다. webhookUrl은 비밀값이라 예시에 넣지 않습니다.",
+  "1": { "keywords": [], "description": "" },
+  "2": { "keywords": [], "description": "" },
+  "3": { "keywords": [], "description": "" },
+  "4": { "keywords": [], "description": "" },
+  "5": { "keywords": [], "description": "" }
+}

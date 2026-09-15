@@ -182,3 +182,98 @@ button.secondary:hover {
   max-height: 90vh;
   overflow-y: auto;
 }
+
+.admin-teams-app {
+  max-width: 800px;
+}
+
+.team-manager {
+  display: flex;
+  gap: 24px;
+  margin-top: 16px;
+}
+
+.org-tree {
+  width: 220px;
+  flex-shrink: 0;
+  font-size: 14px;
+}
+
+.org-group {
+  font-weight: bold;
+  margin: 12px 0 4px;
+  color: #495057;
+}
+
+.org-children {
+  padding-left: 12px;
+}
+
+.org-leaf {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  color: #222;
+  border: none;
+  padding: 6px 8px;
+  margin: 0;
+  font-size: 13px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.org-leaf:hover {
+  background: #f0f2f5;
+}
+
+.team-form-panel {
+  flex: 1;
+  min-width: 0;
+}
+
+.team-form-panel h2 {
+  font-size: 16px;
+  margin: 0 0 8px;
+}
+
+.chip-input {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 6px;
+}
+
+.chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #e7edff;
+  color: #2f4f9e;
+  padding: 2px 4px 2px 10px;
+  border-radius: 12px;
+  font-size: 13px;
+}
+
+.chip-remove {
+  background: none;
+  border: none;
+  color: #2f4f9e;
+  margin: 0;
+  padding: 0 4px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.chip-input input {
+  border: none;
+  outline: none;
+  width: 100%;
+  padding: 6px 4px;
+  font-size: 14px;
+}

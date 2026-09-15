@@ -8,7 +8,7 @@
 
 const store = require("../store/inMemoryStore");
 const { getChatClient } = require("../chat/chatClientRegistry");
-const teams = require("../matching/teams-seed.json");
+const teamRepository = require("../teams/teamRepository");
 const { REMINDER_TIMEOUT_MS, ESCALATION_TIMEOUT_MS, SCHEDULER_INTERVAL_MS } = require("../config");
 
 async function checkTimeouts(now = new Date()) {
@@ -20,7 +20,7 @@ async function checkTimeouts(now = new Date()) {
     if (!inquiry.reminderSentAt) {
       const elapsed = nowMs - new Date(inquiry.chatSentAt).getTime();
       if (elapsed >= REMINDER_TIMEOUT_MS) {
-        const team = teams.find((t) => t.id === inquiry.matchedTeamId);
+        const team = teamRepository.getTeamById(inquiry.matchedTeamId);
         try {
           await getChatClient(team.id).sendReminder(team, inquiry);
         } catch (err) {

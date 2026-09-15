@@ -1,9 +1,11 @@
 // DB 없이 매칭 파이프라인(키워드 후보 추출 + Mock LLM 재판단) 결과를 빠르게 확인하는 스크립트.
 // 실행: node scripts/test-matching.js
-// PostgreSQL이 준비되면 teams-seed.json 대신 실제 teams 테이블을 조회하도록 교체한다 (Phase 9).
+// 팀 데이터는 backend/data/org-chart.json + team-config.json(teamRepository)에서 가져온다 (Phase 12).
+// PostgreSQL이 준비되면 이 데이터도 실제 teams 테이블 조회로 교체된다 (후속 과제).
 
-const teams = require("../src/matching/teams-seed.json");
+const teamRepository = require("../src/teams/teamRepository");
 const { matchInquiry } = require("../src/matching");
+const teams = teamRepository.getAllTeams();
 
 const samples = [
   { title: "법인카드 정산 문의", content: "지난달 법인카드 정산 세금계산서 처리 관련 문의드립니다." },

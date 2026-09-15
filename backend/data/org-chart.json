@@ -1,0 +1,24 @@
+{
+  "name": "회사",
+  "children": [
+    {
+      "name": "재무본부",
+      "children": [{ "id": 1, "name": "회계팀", "isTeam": true }]
+    },
+    {
+      "name": "경영지원본부",
+      "children": [
+        { "id": 2, "name": "인사팀", "isTeam": true },
+        { "id": 4, "name": "총무팀", "isTeam": true }
+      ]
+    },
+    {
+      "name": "IT본부",
+      "children": [{ "id": 3, "name": "IT지원팀", "isTeam": true }]
+    },
+    {
+      "name": "법무실",
+      "children": [{ "id": 5, "name": "법무팀", "isTeam": true }]
+    }
+  ]
+}

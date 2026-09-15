@@ -2,7 +2,7 @@
 // 정식 관리자 페이지는 아직 없음 (프론트 관리자 데모 섹션이 이 API들을 사용할 예정, Phase 9)
 
 const express = require("express");
-const teams = require("../matching/teams-seed.json");
+const teamRepository = require("../teams/teamRepository");
 const store = require("../store/inMemoryStore");
 const { sendInquiryToTeam } = require("../chat/sendInquiryToTeam");
 const { notifyTeamAssigned } = require("../email/notifyInquirer");
@@ -36,7 +36,7 @@ router.post("/inquiries/:id/assign-team", async (req, res) => {
   if (!inquiry.matchFailed) {
     return res.status(409).json({ error: "이미 매칭된 문의입니다." });
   }
-  const team = teams.find((t) => t.id === teamId);
+  const team = teamRepository.getTeamById(teamId);
   if (!team) {
     return res.status(400).json({ error: "존재하지 않는 teamId입니다." });
   }
