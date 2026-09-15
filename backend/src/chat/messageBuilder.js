@@ -13,11 +13,23 @@ function buildDetailUrl(inquiry) {
   return `${FRONTEND_BASE_URL}/admin-detail.html?token=${encodeURIComponent(inquiry.accessToken)}`;
 }
 
+const CONTENT_PREVIEW_LENGTH = 50;
+
+// 문의 내용을 Chat 메시지에 통째로 넣으면 가독성이 떨어져(22절 참고), 앞부분만 미리보기로 보여주고
+// 전체 내용은 상세 페이지 링크에서 확인하게 한다.
+function buildContentPreview(content) {
+  const singleLine = content.replace(/\s+/g, " ").trim();
+  return singleLine.length > CONTENT_PREVIEW_LENGTH
+    ? `${singleLine.slice(0, CONTENT_PREVIEW_LENGTH)}...`
+    : singleLine;
+}
+
 function buildInitialMessage(inquiry) {
   const lines = [
     `[${inquiry.id}] ${inquiry.title}`,
     `작성자: ${inquiry.author}`,
     `문의 ID: ${inquiry.id}`,
+    `내용: ${buildContentPreview(inquiry.content)}`,
   ];
   if (inquiry.imageUrl) {
     lines.push(`📎 첨부 이미지 있음`);
