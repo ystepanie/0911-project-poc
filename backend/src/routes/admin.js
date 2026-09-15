@@ -26,7 +26,7 @@ router.get("/unassigned", (req, res) => {
 });
 
 // 8-2: 관리자 수동 팀 배정 → 정상 플로우(Chat 전송) 재진입
-router.post("/inquiries/:id/assign-team", (req, res) => {
+router.post("/inquiries/:id/assign-team", async (req, res) => {
   const { teamId } = req.body || {};
   const inquiry = store.getById(req.params.id);
 
@@ -49,8 +49,13 @@ router.post("/inquiries/:id/assign-team", (req, res) => {
     assignedManually: true,
   });
 
-  const chatInfo = sendInquiryToTeam(store.getById(inquiry.id), team.id);
-  store.update(inquiry.id, chatInfo);
+  try {
+    const chatInfo = await sendInquiryToTeam(store.getById(inquiry.id), team.id);
+    store.update(inquiry.id, chatInfo);
+  } catch (err) {
+    console.error(`[assign-team] Chat 전송 실패: ${err.message}`);
+    store.update(inquiry.id, { chatSendError: err.message });
+  }
 
   notifyTeamAssigned(store.getById(inquiry.id)); // 매칭 실패가 관리자 수동 배정으로 해결됐을 때만 이메일 발송
 

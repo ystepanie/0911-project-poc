@@ -1,45 +1,34 @@
-// Google Chat App 등록 전까지 쓰는 Mock 클라이언트 (체크리스트 Phase 6, 문의라우팅_백엔드_구현계획.md 5.2절).
+// Google Chat 웹훅이 설정되지 않은 팀(체크리스트 부록 참고)에 쓰는 Mock 클라이언트.
 // 실제 API를 호출하지 않고, 전송했다고 가정한 메시지를 인메모리 로그에 남기고 console에 출력한다.
-// 실 연동 시 이 파일과 동일한 인터페이스(sendMessage)를 가진 LiveChatClient로 교체하면 되도록 둔다.
+// liveChatClient.js와 동일한 인터페이스(sendMessage/sendReminder(team, inquiry))를 유지한다.
+
+const { buildInitialMessage, buildReminderMessage } = require("./messageBuilder");
 
 let seq = 0;
 const log = [];
 
-function buildMessageText(inquiry) {
-  const lines = [
-    `[${inquiry.id}] ${inquiry.title}`,
-    `작성자: ${inquiry.author}`,
-    `문의 ID: ${inquiry.id}`,
-  ];
-  if (inquiry.imageUrl) {
-    lines.push(`첨부 이미지: ${inquiry.imageUrl}`); // 11-3: 매칭에는 안 쓰지만 Chat 메시지에는 링크로 노출
-  }
-  lines.push(`완료 처리 시 이 메시지에 ✅ 리액션을 남겨주세요.`);
-  return lines.join("\n");
-}
-
-// interface ChatClient { sendMessage(spaceId, inquiry): { messageId, sentAt } }
-function sendMessage(spaceId, inquiry) {
+// interface ChatClient { sendMessage(team, inquiry): Promise<{ messageId, sentAt }> }
+async function sendMessage(team, inquiry) {
   seq += 1;
   const messageId = `mock-msg-${seq}`;
   const sentAt = new Date().toISOString();
-  const text = buildMessageText(inquiry);
+  const text = buildInitialMessage(inquiry);
 
-  log.push({ type: "initial", messageId, spaceId, inquiryId: inquiry.id, text, sentAt });
-  console.log(`[MockChatClient] → ${spaceId}\n${text}\n`);
+  log.push({ type: "initial", messageId, spaceId: team.chatSpaceId, inquiryId: inquiry.id, text, sentAt });
+  console.log(`[MockChatClient] → ${team.chatSpaceId}\n${text}\n`);
 
   return { messageId, sentAt };
 }
 
 // 무응답 타임아웃 리마인드 (5.4절) — 팀장 멘션 메시지를 같은 스페이스에 추가 전송
-function sendReminder(spaceId, inquiry) {
+async function sendReminder(team, inquiry) {
   seq += 1;
   const messageId = `mock-msg-${seq}`;
   const sentAt = new Date().toISOString();
-  const text = `@팀장님 [${inquiry.id}] "${inquiry.title}" 문의가 아직 처리되지 않았습니다. 확인 부탁드립니다.`;
+  const text = buildReminderMessage(inquiry);
 
-  log.push({ type: "reminder", messageId, spaceId, inquiryId: inquiry.id, text, sentAt });
-  console.log(`[MockChatClient][reminder] → ${spaceId}\n${text}\n`);
+  log.push({ type: "reminder", messageId, spaceId: team.chatSpaceId, inquiryId: inquiry.id, text, sentAt });
+  console.log(`[MockChatClient][reminder] → ${team.chatSpaceId}\n${text}\n`);
 
   return { messageId, sentAt };
 }

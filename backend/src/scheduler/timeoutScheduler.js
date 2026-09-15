@@ -7,11 +7,11 @@
 //       리마인드(reminderSentAt) 후 ESCALATION_TIMEOUT_MS 추가 경과 && 미완료 → escalatedAt 기록(관리자 페이지 노출 대상)
 
 const store = require("../store/inMemoryStore");
-const chatClient = require("../chat/mockChatClient");
+const { getChatClient } = require("../chat/chatClientRegistry");
 const teams = require("../matching/teams-seed.json");
 const { REMINDER_TIMEOUT_MS, ESCALATION_TIMEOUT_MS, SCHEDULER_INTERVAL_MS } = require("../config");
 
-function checkTimeouts(now = new Date()) {
+async function checkTimeouts(now = new Date()) {
   const nowMs = now.getTime();
 
   for (const inquiry of store.list()) {
@@ -21,7 +21,11 @@ function checkTimeouts(now = new Date()) {
       const elapsed = nowMs - new Date(inquiry.chatSentAt).getTime();
       if (elapsed >= REMINDER_TIMEOUT_MS) {
         const team = teams.find((t) => t.id === inquiry.matchedTeamId);
-        chatClient.sendReminder(team.chatSpaceId, inquiry);
+        try {
+          await getChatClient(team.id).sendReminder(team, inquiry);
+        } catch (err) {
+          console.error(`[TimeoutScheduler] 리마인드 전송 실패 (${inquiry.id}): ${err.message}`);
+        }
         store.update(inquiry.id, { reminderSentAt: now.toISOString() });
       }
       continue;
@@ -41,7 +45,9 @@ let timer = null;
 
 function start() {
   if (timer) return; // 중복 시작 방지
-  timer = setInterval(() => checkTimeouts(), SCHEDULER_INTERVAL_MS);
+  timer = setInterval(() => {
+    checkTimeouts().catch((err) => console.error(`[TimeoutScheduler] ${err.message}`));
+  }, SCHEDULER_INTERVAL_MS);
 }
 
 function stop() {

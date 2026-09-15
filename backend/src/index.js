@@ -1,3 +1,5 @@
+require("dotenv").config(); // backend/.env(git 미포함)에서 CHAT_WEBHOOK_* 등을 읽어옴 — Phase 6 실 연동용
+
 const express = require("express");
 const cors = require("cors");
 const inquiriesRouter = require("./routes/inquiries");

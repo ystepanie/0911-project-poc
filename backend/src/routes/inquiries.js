@@ -11,7 +11,7 @@ const { upload } = require("../upload/uploadMiddleware"); // 11-2: 이미지 첨
 
 const router = express.Router();
 
-router.post("/", upload.single("image"), (req, res) => {
+router.post("/", upload.single("image"), async (req, res) => {
   const { author, contact, title, content } = req.body || {};
 
   if (!author || !contact || !title || !content) {
@@ -43,6 +43,7 @@ router.post("/", upload.single("image"), (req, res) => {
 
     chatMessageId: null,
     chatSentAt: null,
+    chatSendError: null,
     completedAt: null,
     completedBy: null,
 
@@ -63,7 +64,13 @@ router.post("/", upload.single("image"), (req, res) => {
   // 문의 결과는 이 응답으로 화면에 바로 표시되므로, 제출 시점에는 이메일을 보내지 않는다.
   // 실패 건이 관리자 수동 배정으로 해결됐을 때만 이메일 발송 (routes/admin.js assign-team 참고).
   if (!match.matchFailed) {
-    Object.assign(inquiry, sendInquiryToTeam(inquiry, match.matchedTeamId));
+    try {
+      Object.assign(inquiry, await sendInquiryToTeam(inquiry, match.matchedTeamId));
+    } catch (err) {
+      // 실 Chat 웹훅 전송 실패(네트워크/URL 오류 등) — 문의 자체는 등록하되 전송 실패를 남겨 관리자가 확인하게 함
+      console.error(`[POST /api/inquiries] Chat 전송 실패: ${err.message}`);
+      inquiry.chatSendError = err.message;
+    }
   }
 
   store.create(inquiry);
