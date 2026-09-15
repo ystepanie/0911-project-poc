@@ -7,17 +7,16 @@ const MAX_CANDIDATES = 5;
 function scoreTeam(text, team) {
   const normalized = text.toLowerCase();
   const hits = team.keywords.filter((kw) => normalized.includes(kw.toLowerCase()));
-  return hits.length / team.keywords.length;
+  return { score: hits.length / team.keywords.length, hits: hits.length };
 }
 
-// interface CandidateFilter { getCandidates(text, teams): Array<{ teamId, teamName, keywordScore }> }
+// interface CandidateFilter { getCandidates(text, teams): Array<{ teamId, teamName, keywordScore, keywordHits }> }
 function getCandidates(text, teams) {
   return teams
-    .map((team) => ({
-      teamId: team.id,
-      teamName: team.name,
-      keywordScore: scoreTeam(text, team),
-    }))
+    .map((team) => {
+      const { score, hits } = scoreTeam(text, team);
+      return { teamId: team.id, teamName: team.name, keywordScore: score, keywordHits: hits };
+    })
     .filter((candidate) => candidate.keywordScore > 0)
     .sort((a, b) => b.keywordScore - a.keywordScore)
     .slice(0, MAX_CANDIDATES);
