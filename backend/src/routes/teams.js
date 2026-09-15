@@ -37,6 +37,16 @@ router.put("/:id/config", (req, res) => {
   res.json({ id, name: team.name, ...updated });
 });
 
+// 담당자 배정 드롭다운용 — 해당 팀 소속 담당자 후보 목록 (지금은 team-members.json 하드코딩, 후속 과제로 실 DB 연동)
+router.get("/:id/members", (req, res) => {
+  const id = Number(req.params.id);
+  const team = teamRepository.getTeamById(id);
+  if (!team) {
+    return res.status(404).json({ error: "존재하지 않는 teamId입니다." });
+  }
+  res.json(teamRepository.getTeamMembers(id));
+});
+
 // 12-6: 저장된 웹훅으로 테스트 메시지 전송
 router.post("/:id/test-webhook", async (req, res) => {
   const id = Number(req.params.id);

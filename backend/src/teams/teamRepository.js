@@ -9,6 +9,7 @@ const path = require("path");
 const DATA_DIR = path.join(__dirname, "..", "..", "data");
 const ORG_CHART_PATH = path.join(DATA_DIR, "org-chart.json");
 const TEAM_CONFIG_PATH = path.join(DATA_DIR, "team-config.json");
+const TEAM_MEMBERS_PATH = path.join(DATA_DIR, "team-members.json");
 
 function readOrgChart() {
   return JSON.parse(fs.readFileSync(ORG_CHART_PATH, "utf-8"));
@@ -45,6 +46,12 @@ function getAllTeams() {
 
 function getTeamById(id) {
   return getAllTeams().find((team) => team.id === id) || null;
+}
+
+// 담당자 배정 드롭다운용 — 실제로는 회사 인사 DB에서 조회할 데이터를 team-members.json으로 하드코딩 대체 (테스트용, 후속 과제)
+function getTeamMembers(id) {
+  const all = JSON.parse(fs.readFileSync(TEAM_MEMBERS_PATH, "utf-8"));
+  return all[id] || [];
 }
 
 // Chat 전송용 — 비밀값이라 getAllTeams()에는 포함하지 않고 이 함수로만 꺼낸다
@@ -101,6 +108,7 @@ function saveTeamConfig(id, { keywords, description, webhookUrl }) {
 module.exports = {
   getAllTeams,
   getTeamById,
+  getTeamMembers,
   getWebhookUrl,
   getOrgChartWithStatus,
   getTeamConfig,

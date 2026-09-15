@@ -43,6 +43,10 @@ router.post("/", upload.single("image"), async (req, res) => {
 
     assignedManually: false,
 
+    assigneeId: null, // 담당자 배정 (팀 배정 → 완료 사이 단계)
+    assigneeName: null,
+    assigneeAssignedAt: null,
+
     chatMessageId: null,
     chatSentAt: null,
     chatSendError: null,
@@ -61,7 +65,20 @@ router.post("/", upload.single("image"), async (req, res) => {
       comment: null,
       answeredAt: null,
     },
+
+    // 문의 하나의 전체 생명주기를 시간순으로 남기는 로그 (사용자 요청사항)
+    statusLog: [{ at: new Date().toISOString(), event: "created", detail: `문의 접수 (작성자: ${author})` }],
   };
+
+  inquiry.statusLog.push(
+    match.matchFailed
+      ? { at: new Date().toISOString(), event: "match_failed", detail: `매칭 실패 (사유: ${match.failReason})` }
+      : {
+          at: new Date().toISOString(),
+          event: "matched",
+          detail: `${match.matchedTeamName}으로 자동 매칭 (신뢰도 ${(match.matchConfidence * 100).toFixed(0)}%)`,
+        }
+  );
 
   // 문의 결과는 이 응답으로 화면에 바로 표시되므로, 제출 시점에는 이메일을 보내지 않는다.
   // 실패 건이 관리자 수동 배정으로 해결됐을 때만 이메일 발송 (routes/admin.js assign-team 참고).
@@ -72,6 +89,11 @@ router.post("/", upload.single("image"), async (req, res) => {
       // 실 Chat 웹훅 전송 실패(네트워크/URL 오류 등) — 문의 자체는 등록하되 전송 실패를 남겨 관리자가 확인하게 함
       console.error(`[POST /api/inquiries] Chat 전송 실패: ${err.message}`);
       inquiry.chatSendError = err.message;
+      inquiry.statusLog.push({
+        at: new Date().toISOString(),
+        event: "chat_send_failed",
+        detail: `Chat 전송 실패 (${err.message})`,
+      });
     }
   }
 
@@ -129,6 +151,35 @@ router.get("/:id", (req, res) => {
   res.json(inquiry);
 });
 
+// 담당자 배정 (팀 배정 → 완료 사이 단계, 순서 강제 없음 — 완료 처리 전/후 아무 때나 호출 가능)
+// 담당자 후보 명단은 teamRepository.getTeamMembers()가 제공 (지금은 team-members.json 하드코딩, 후속 과제로 실 DB 연동)
+router.post("/:id/assignee", (req, res) => {
+  const { assigneeId } = req.body || {};
+  const inquiry = store.getById(req.params.id);
+
+  if (!inquiry) {
+    return res.status(404).json({ error: "존재하지 않는 문의 ID입니다." });
+  }
+  if (inquiry.matchFailed || !inquiry.matchedTeamId) {
+    return res.status(409).json({ error: "팀이 배정되지 않은 문의에는 담당자를 지정할 수 없습니다." });
+  }
+
+  const members = teamRepository.getTeamMembers(inquiry.matchedTeamId);
+  const member = members.find((m) => m.id === assigneeId);
+  if (!member) {
+    return res.status(400).json({ error: "존재하지 않는 담당자입니다." });
+  }
+
+  store.update(inquiry.id, {
+    assigneeId: member.id,
+    assigneeName: member.name,
+    assigneeAssignedAt: new Date().toISOString(),
+  });
+  store.appendStatusLog(inquiry.id, "assignee_assigned", `담당자로 ${member.name} 지정`);
+
+  res.json(store.getById(inquiry.id));
+});
+
 // 8-4: 관리자가 설문 발송을 확정 (자동 발송 대신 수동 확정)
 router.post("/:id/survey-ready", (req, res) => {
   const { adminEmail } = req.body || {};
@@ -146,6 +197,7 @@ router.post("/:id/survey-ready", (req, res) => {
     surveyReadyAt: new Date().toISOString(),
     surveyReadyBy: adminEmail || null,
   });
+  store.appendStatusLog(inquiry.id, "survey_ready", "만족도 조사 발송 확정");
 
   res.json(store.getById(inquiry.id));
 });
@@ -169,6 +221,7 @@ router.post("/:id/survey", (req, res) => {
       answeredAt: new Date().toISOString(),
     },
   });
+  store.appendStatusLog(inquiry.id, "survey_answered", `만족도 조사 응답 완료 (만족도 ${satisfaction})`);
 
   res.json(store.getById(inquiry.id));
 });

@@ -68,6 +68,18 @@ export async function completeInquiry(inquiryId) {
   });
 }
 
+// 담당자 배정용 — 매칭된 팀 소속 담당자 후보 목록 (team-members.json 하드코딩 기반)
+export async function getTeamMembers(teamId) {
+  return request(`/teams/${encodeURIComponent(teamId)}/members`);
+}
+
+export async function assignInquiryOwner(inquiryId, assigneeId) {
+  return request(`/inquiries/${encodeURIComponent(inquiryId)}/assignee`, {
+    method: "POST",
+    body: JSON.stringify({ assigneeId }),
+  });
+}
+
 export async function submitSurvey(inquiryId, { satisfaction, matchCorrect, comment }) {
   return request(`/inquiries/${encodeURIComponent(inquiryId)}/survey`, {
     method: "POST",

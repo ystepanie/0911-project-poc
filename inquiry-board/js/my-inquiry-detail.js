@@ -3,7 +3,7 @@
 // 여기서는 매칭/처리/설문 상태를 조회만 한다.
 
 import { getInquiryByToken, resolveUploadUrl } from "./api.js";
-import { statusDetails } from "./inquiryStatus.js";
+import { statusDetails, renderStatusLogHtml } from "./inquiryStatus.js";
 
 const detailEl = document.getElementById("detail");
 const params = new URLSearchParams(window.location.search);
@@ -39,6 +39,8 @@ async function init() {
     ${imageHtml}
     <hr />
     ${statusHtml}
+    <h2>처리 이력</h2>
+    ${renderStatusLogHtml(inquiry)}
   `;
 }
 

@@ -30,4 +30,13 @@ function update(id, patch) {
   return inquiry;
 }
 
-module.exports = { nextInquiryId, create, getById, list, update };
+// 상태 변경 이력 — 문의 하나의 전체 생명주기(접수/매칭/배정/담당자지정/완료/설문 등)를 로그로 남긴다.
+function appendStatusLog(id, event, detail) {
+  const inquiry = getById(id);
+  if (!inquiry) return null;
+  if (!inquiry.statusLog) inquiry.statusLog = [];
+  inquiry.statusLog.push({ at: new Date().toISOString(), event, detail });
+  return inquiry;
+}
+
+module.exports = { nextInquiryId, create, getById, list, update, appendStatusLog };

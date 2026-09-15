@@ -35,6 +35,11 @@ export function statusDetails(inquiry) {
       lines.push("관리자가 수동으로 배정한 건입니다.");
     }
     lines.push(
+      inquiry.assigneeName
+        ? `담당자: ${inquiry.assigneeName} (${new Date(inquiry.assigneeAssignedAt).toLocaleString()} 지정)`
+        : "담당자: 미지정"
+    );
+    lines.push(
       inquiry.chatSendError
         ? `팀 전달 실패: ${inquiry.chatSendError}`
         : inquiry.chatSentAt
@@ -58,4 +63,25 @@ export function statusDetails(inquiry) {
   }
 
   return lines;
+}
+
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// 문의 전체 생명주기 로그(statusLog)를 상세 화면에 그대로 보여주기 위한 HTML — admin-detail.js/my-inquiry-detail.js 공용
+export function renderStatusLogHtml(inquiry) {
+  const log = inquiry.statusLog || [];
+  if (!log.length) return "<p>기록된 이력이 없습니다.</p>";
+
+  const items = log
+    .map(
+      (entry) =>
+        `<li><span class="status-log-time">${new Date(entry.at).toLocaleString()}</span> — ${escapeHtml(entry.detail)}</li>`
+    )
+    .join("");
+
+  return `<ul class="status-log">${items}</ul>`;
 }

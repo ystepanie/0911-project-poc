@@ -1,0 +1,20 @@
+{
+  "_comment": "팀별 담당자 후보 명단 — 실제로는 회사 인사 DB에서 조회할 데이터를 하드코딩으로 대체(테스트용, 후속 과제로 실제 DB 연동 예정).",
+  "1": [
+    { "id": "u101", "name": "김회계", "email": "kim.acc@example.com" },
+    { "id": "u102", "name": "이정산", "email": "lee.acc@example.com" }
+  ],
+  "2": [
+    { "id": "u201", "name": "박인사", "email": "park.hr@example.com" },
+    { "id": "u202", "name": "최채용", "email": "choi.hr@example.com" }
+  ],
+  "3": [
+    { "id": "u301", "name": "정지원", "email": "jung.it@example.com" }
+  ],
+  "4": [
+    { "id": "u401", "name": "한총무", "email": "han.ga@example.com" }
+  ],
+  "5": [
+    { "id": "u501", "name": "윤법무", "email": "yoon.legal@example.com" }
+  ]
+}

@@ -48,6 +48,7 @@ router.post("/inquiries/:id/assign-team", async (req, res) => {
     failReason: null,
     assignedManually: true,
   });
+  store.appendStatusLog(inquiry.id, "team_assigned_manual", `관리자가 ${team.name}으로 수동 배정`);
 
   try {
     const chatInfo = await sendInquiryToTeam(store.getById(inquiry.id), team.id);
@@ -55,6 +56,7 @@ router.post("/inquiries/:id/assign-team", async (req, res) => {
   } catch (err) {
     console.error(`[assign-team] Chat 전송 실패: ${err.message}`);
     store.update(inquiry.id, { chatSendError: err.message });
+    store.appendStatusLog(inquiry.id, "chat_send_failed", `Chat 전송 실패 (${err.message})`);
   }
 
   notifyTeamAssigned(store.getById(inquiry.id)); // 매칭 실패가 관리자 수동 배정으로 해결됐을 때만 이메일 발송

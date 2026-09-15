@@ -33,6 +33,7 @@ router.post("/", (req, res) => {
     completedAt: new Date().toISOString(),
     completedBy: actorEmail,
   });
+  store.appendStatusLog(inquiryId, "completed", `완료 처리 (처리자: ${actorEmail})`);
 
   res.json(store.getById(inquiryId));
 });
