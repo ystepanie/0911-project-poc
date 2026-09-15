@@ -10,6 +10,7 @@
     "seed": "psql \"$DATABASE_URL\" -f seeds/001_teams.sql"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.125.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^4.19.2",

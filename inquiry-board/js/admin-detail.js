@@ -35,6 +35,10 @@ async function render() {
     ? `<p class="muted">완료 처리됨 (${new Date(inquiry.completedAt).toLocaleString()}, 처리자: ${inquiry.completedBy ?? "-"})</p>`
     : `<button type="button" id="complete-btn">완료 처리</button>`;
 
+  const reasonHtml = inquiry.matchReason
+    ? `<p class="muted"><strong>매칭 판단 근거:</strong> ${inquiry.matchReason}</p>`
+    : "";
+
   detailEl.innerHTML = `
     <p><strong>문의 ID:</strong> ${inquiry.id}</p>
     <p><strong>작성자:</strong> ${inquiry.author} (${inquiry.contact})</p>
@@ -42,6 +46,7 @@ async function render() {
     <p><strong>내용:</strong><br/>${inquiry.content.replace(/\n/g, "<br/>")}</p>
     ${imageHtml}
     <p><strong>매칭 팀:</strong> ${inquiry.matchedTeam ?? "-"} (신뢰도 ${(inquiry.matchConfidence * 100).toFixed(0)}%)</p>
+    ${reasonHtml}
     ${statusHtml}
   `;
 

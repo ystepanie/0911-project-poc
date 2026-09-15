@@ -1,8 +1,10 @@
-// DB 없이 매칭 파이프라인(키워드 후보 추출 + Mock LLM 재판단) 결과를 빠르게 확인하는 스크립트.
+// DB 없이 매칭 파이프라인(키워드 후보 추출 + LLM 재판단) 결과를 빠르게 확인하는 스크립트.
 // 실행: node scripts/test-matching.js
+// backend/.env에 ANTHROPIC_API_KEY가 있으면 실제 Claude API를 호출한다 (rerankerRegistry.js).
 // 팀 데이터는 backend/data/org-chart.json + team-config.json(teamRepository)에서 가져온다 (Phase 12).
 // PostgreSQL이 준비되면 이 데이터도 실제 teams 테이블 조회로 교체된다 (후속 과제).
 
+require("dotenv").config();
 const teamRepository = require("../src/teams/teamRepository");
 const { matchInquiry } = require("../src/matching");
 const teams = teamRepository.getAllTeams();
@@ -14,13 +16,18 @@ const samples = [
   { title: "기타 문의", content: "오늘 날씨가 좋네요 감사합니다" },
 ];
 
-for (const sample of samples) {
-  const result = matchInquiry(`${sample.title} ${sample.content}`, teams);
-  console.log("----------------------------------------");
-  console.log(`제목: ${sample.title}`);
-  console.log(`후보군 (${result.candidateTeams.length}개):`, result.candidateTeams);
-  console.log(`매칭 결과: ${result.matchedTeamName ?? "(없음)"}`);
-  console.log(`confidence: ${result.matchConfidence}`);
-  console.log(`실패 여부: ${result.matchFailed} (${result.failReason ?? "-"})`);
-  console.log(`재판단 사유: ${result.reason ?? "-"}`);
+async function main() {
+  for (const sample of samples) {
+    const result = await matchInquiry(`${sample.title} ${sample.content}`, teams);
+    console.log("----------------------------------------");
+    console.log(`제목: ${sample.title}`);
+    console.log(`후보군 (${result.candidateTeams.length}개):`, result.candidateTeams);
+    console.log(`매칭 결과: ${result.matchedTeamName ?? "(없음)"}`);
+    console.log(`confidence: ${result.matchConfidence}`);
+    console.log(`matcherMode: ${result.matcherMode ?? "-"}`);
+    console.log(`실패 여부: ${result.matchFailed} (${result.failReason ?? "-"})`);
+    console.log(`재판단 사유: ${result.reason ?? "-"}`);
+  }
 }
+
+main();

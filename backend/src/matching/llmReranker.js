@@ -37,6 +37,7 @@ function rerank(text, candidates) {
     reason,
     failed,
     failReason: failed ? "low_confidence" : null,
+    matcherMode: MATCHER_MODE,
   };
 }
 
