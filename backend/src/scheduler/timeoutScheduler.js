@@ -23,8 +23,11 @@ async function checkTimeouts(now = new Date()) {
         const team = teamRepository.getTeamById(inquiry.matchedTeamId);
         try {
           await getChatClient(team.id).sendReminder(team, inquiry);
+          store.appendStatusLog(inquiry.id, "reminder_sent", `무응답 리마인드 발송 (팀: ${team.name})`);
         } catch (err) {
           console.error(`[TimeoutScheduler] 리마인드 전송 실패 (${inquiry.id}): ${err.message}`);
+          // 등록/수동배정 시 Chat 전송 실패를 statusLog에 남기는 것(sendInquiryToTeam.js)과 동일한 처리 방식
+          store.appendStatusLog(inquiry.id, "reminder_failed", `리마인드 전송 실패 (${err.message})`);
         }
         store.update(inquiry.id, { reminderSentAt: now.toISOString() });
       }
@@ -35,6 +38,7 @@ async function checkTimeouts(now = new Date()) {
       const elapsedSinceReminder = nowMs - new Date(inquiry.reminderSentAt).getTime();
       if (elapsedSinceReminder >= ESCALATION_TIMEOUT_MS) {
         store.update(inquiry.id, { escalatedAt: now.toISOString() });
+        store.appendStatusLog(inquiry.id, "escalated", "리마인드 후에도 무응답 지속 — 관리자 페이지 노출 대상으로 전환");
         console.log(`[TimeoutScheduler] ${inquiry.id} 무응답 지속 — 관리자 페이지 노출 대상으로 전환`);
       }
     }

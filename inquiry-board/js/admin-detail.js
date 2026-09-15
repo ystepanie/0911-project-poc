@@ -2,7 +2,7 @@
 // ✅ 리액션 대신, 이 페이지에서 전체 내용/이미지를 보고 완료 처리 버튼을 누르는 방식으로 완료 트리거를 대체한다.
 
 import { getInquiryByToken, completeInquiry, resolveUploadUrl, getTeamMembers, assignInquiryOwner } from "./api.js";
-import { renderStatusLogHtml, renderAttachmentHtml } from "./inquiryStatus.js";
+import { renderStatusLogHtml, renderAttachmentHtml, escapeHtml } from "./inquiryStatus.js";
 
 const detailEl = document.getElementById("detail");
 const params = new URLSearchParams(window.location.search);
@@ -30,11 +30,11 @@ async function render() {
   const imageHtml = renderAttachmentHtml(resolveUploadUrl(inquiry.imageUrl));
 
   const statusHtml = inquiry.completedAt
-    ? `<p class="muted">완료 처리됨 (${new Date(inquiry.completedAt).toLocaleString()}, 처리자: ${inquiry.completedBy ?? "-"})</p>`
+    ? `<p class="muted">완료 처리됨 (${new Date(inquiry.completedAt).toLocaleString()}, 처리자: ${escapeHtml(inquiry.completedBy) || "-"})</p>`
     : `<button type="button" id="complete-btn">완료 처리</button>`;
 
   const reasonHtml = inquiry.matchReason
-    ? `<p class="muted"><strong>매칭 판단 근거:</strong> ${inquiry.matchReason}</p>`
+    ? `<p class="muted"><strong>매칭 판단 근거:</strong> ${escapeHtml(inquiry.matchReason)}</p>`
     : "";
 
   // 담당자 배정 UI — 매칭된 팀이 있을 때만 노출, 완료 처리와 순서 무관하게 언제든 지정 가능
@@ -47,10 +47,13 @@ async function render() {
       members = [];
     }
     const currentLine = inquiry.assigneeName
-      ? `<p class="muted">현재 담당자: <strong>${inquiry.assigneeName}</strong> (${new Date(inquiry.assigneeAssignedAt).toLocaleString()} 지정)</p>`
+      ? `<p class="muted">현재 담당자: <strong>${escapeHtml(inquiry.assigneeName)}</strong> (${new Date(inquiry.assigneeAssignedAt).toLocaleString()} 지정)</p>`
       : `<p class="muted">현재 담당자: 미지정</p>`;
     const options = members
-      .map((m) => `<option value="${m.id}" ${m.id === inquiry.assigneeId ? "selected" : ""}>${m.name} (${m.email})</option>`)
+      .map(
+        (m) =>
+          `<option value="${escapeHtml(m.id)}" ${m.id === inquiry.assigneeId ? "selected" : ""}>${escapeHtml(m.name)} (${escapeHtml(m.email)})</option>`
+      )
       .join("");
     assigneeHtml = `
       <div class="assignee-box">
@@ -65,12 +68,12 @@ async function render() {
   }
 
   detailEl.innerHTML = `
-    <p><strong>문의 ID:</strong> ${inquiry.id}</p>
-    <p><strong>작성자:</strong> ${inquiry.author} (${inquiry.contact})</p>
-    <p><strong>제목:</strong> ${inquiry.title}</p>
-    <p><strong>내용:</strong><br/>${inquiry.content.replace(/\n/g, "<br/>")}</p>
+    <p><strong>문의 ID:</strong> ${escapeHtml(inquiry.id)}</p>
+    <p><strong>작성자:</strong> ${escapeHtml(inquiry.author)} (${escapeHtml(inquiry.contact)})</p>
+    <p><strong>제목:</strong> ${escapeHtml(inquiry.title)}</p>
+    <p><strong>내용:</strong><br/>${escapeHtml(inquiry.content).replace(/\n/g, "<br/>")}</p>
     ${imageHtml}
-    <p><strong>매칭 팀:</strong> ${inquiry.matchedTeam ?? "-"} (신뢰도 ${(inquiry.matchConfidence * 100).toFixed(0)}%)</p>
+    <p><strong>매칭 팀:</strong> ${escapeHtml(inquiry.matchedTeam) || "-"} (신뢰도 ${(inquiry.matchConfidence * 100).toFixed(0)}%)</p>
     ${reasonHtml}
     ${assigneeHtml}
     ${statusHtml}

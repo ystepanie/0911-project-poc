@@ -2,6 +2,8 @@
 // 서버 프로세스를 재시작하면 데이터가 사라진다 — Phase 9(DB 연동)에서 실제 repository로 교체될 자리.
 // 프론트 mock(inquiry-board/js/mock-data.js)의 localStorage 저장소와 동일한 역할을 서버 쪽에서 대신한다.
 
+const { nowIso } = require("../utils/time");
+
 const inquiries = [];
 let seq = 0;
 
@@ -35,7 +37,7 @@ function appendStatusLog(id, event, detail) {
   const inquiry = getById(id);
   if (!inquiry) return null;
   if (!inquiry.statusLog) inquiry.statusLog = [];
-  inquiry.statusLog.push({ at: new Date().toISOString(), event, detail });
+  inquiry.statusLog.push({ at: nowIso(), event, detail });
   return inquiry;
 }
 

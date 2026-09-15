@@ -22,11 +22,11 @@ async function main() {
     console.log("----------------------------------------");
     console.log(`제목: ${sample.title}`);
     console.log(`후보군 (${result.candidateTeams.length}개):`, result.candidateTeams);
-    console.log(`매칭 결과: ${result.matchedTeamName ?? "(없음)"}`);
+    console.log(`매칭 결과: ${result.matchedTeam ?? "(없음)"}`);
     console.log(`confidence: ${result.matchConfidence}`);
     console.log(`matcherMode: ${result.matcherMode ?? "-"}`);
     console.log(`실패 여부: ${result.matchFailed} (${result.failReason ?? "-"})`);
-    console.log(`재판단 사유: ${result.reason ?? "-"}`);
+    console.log(`재판단 사유: ${result.matchReason ?? "-"}`);
   }
 }
 

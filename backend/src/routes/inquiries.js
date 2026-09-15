@@ -10,6 +10,7 @@ const store = require("../store/inMemoryStore");
 const { sendInquiryToTeam } = require("../chat/sendInquiryToTeam");
 const { upload } = require("../upload/uploadMiddleware"); // 11-2: 이미지 첨부 (JSON 요청이면 그냥 통과됨)
 const { requireInquiry } = require("./helpers");
+const { nowIso } = require("../utils/time");
 
 const router = express.Router();
 
@@ -31,16 +32,11 @@ router.post("/", upload.single("image"), async (req, res) => {
     title,
     content,
     imageUrl: req.file ? `/uploads/${req.file.filename}` : null,
-    createdAt: new Date().toISOString(),
+    createdAt: nowIso(),
 
-    candidateTeams: match.candidateTeams,
-    matchedTeamId: match.matchedTeamId, // 스케줄러가 리마인드 보낼 스페이스를 찾는 데 사용 (내부용)
-    matchedTeam: match.matchedTeamName,
-    matchConfidence: match.matchConfidence,
-    matchFailed: match.matchFailed,
-    failReason: match.failReason,
-    matcherMode: match.matcherMode,
-    matchReason: match.reason, // 관리자 화면(8-1)에서 low_confidence 사유 확인용
+    // candidateTeams/matchedTeamId/matchedTeam/matchConfidence/matchFailed/failReason/matcherMode/matchReason
+    // matchInquiry()의 반환 필드명이 inquiry 객체 필드명과 동일하게 맞춰져 있어 그대로 펼치면 된다 (matching/index.js 참고).
+    ...match,
 
     assignedManually: false,
 
@@ -79,7 +75,7 @@ router.post("/", upload.single("image"), async (req, res) => {
     match.matchFailed ? "match_failed" : "matched",
     match.matchFailed
       ? `매칭 실패 (사유: ${match.failReason})`
-      : `${match.matchedTeamName}으로 자동 매칭 (신뢰도 ${(match.matchConfidence * 100).toFixed(0)}%)`
+      : `${match.matchedTeam}으로 자동 매칭 (신뢰도 ${(match.matchConfidence * 100).toFixed(0)}%)`
   );
 
   // 문의 결과는 이 응답으로 화면에 바로 표시되므로, 제출 시점에는 이메일을 보내지 않는다.
@@ -159,7 +155,7 @@ router.post("/:id/assignee", (req, res) => {
   store.update(inquiry.id, {
     assigneeId: member.id,
     assigneeName: member.name,
-    assigneeAssignedAt: new Date().toISOString(),
+    assigneeAssignedAt: nowIso(),
   });
   store.appendStatusLog(inquiry.id, "assignee_assigned", `담당자로 ${member.name} 지정`);
 
@@ -178,7 +174,7 @@ router.post("/:id/survey-ready", (req, res) => {
 
   store.update(inquiry.id, {
     surveyReady: true,
-    surveyReadyAt: new Date().toISOString(),
+    surveyReadyAt: nowIso(),
     surveyReadyBy: adminEmail || null,
   });
   store.appendStatusLog(inquiry.id, "survey_ready", "만족도 조사 발송 확정");
@@ -200,7 +196,7 @@ router.post("/:id/survey", (req, res) => {
       satisfaction,
       matchCorrect,
       comment: comment || "",
-      answeredAt: new Date().toISOString(),
+      answeredAt: nowIso(),
     },
   });
   store.appendStatusLog(inquiry.id, "survey_answered", `만족도 조사 응답 완료 (만족도 ${satisfaction})`);

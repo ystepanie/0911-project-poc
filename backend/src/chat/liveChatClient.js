@@ -5,6 +5,7 @@
 
 const { buildInitialMessage, buildReminderMessage } = require("./messageBuilder");
 const { getWebhookUrl } = require("../teams/teamRepository");
+const { nowIso } = require("../utils/time");
 
 async function postToWebhook(webhookUrl, text) {
   const res = await fetch(webhookUrl, {
@@ -24,13 +25,13 @@ async function sendMessage(team, inquiry) {
   const webhookUrl = getWebhookUrl(team.id);
   await postToWebhook(webhookUrl, buildInitialMessage(inquiry));
   // 수신 웹훅 응답에는 메시지 ID가 없어 null로 둔다 (리액션 매칭이 필요 없는 전송 전용 구조라 문제 없음)
-  return { messageId: null, sentAt: new Date().toISOString() };
+  return { messageId: null, sentAt: nowIso() };
 }
 
 async function sendReminder(team, inquiry) {
   const webhookUrl = getWebhookUrl(team.id);
   await postToWebhook(webhookUrl, buildReminderMessage(inquiry));
-  return { messageId: null, sentAt: new Date().toISOString() };
+  return { messageId: null, sentAt: nowIso() };
 }
 
 // 관리자 페이지의 "테스트 전송" 버튼용 (체크리스트 12-6)

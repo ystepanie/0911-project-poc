@@ -1,38 +1,19 @@
 // 팀 관리자 페이지 (체크리스트 Phase 12) — 조직도에서 팀을 선택해 키워드/설명/Chat 웹훅을 등록한다.
 
 import { getOrgChart, getTeamConfig, saveTeamConfig, testTeamWebhook } from "./api.js";
+import { escapeHtml } from "./inquiryStatus.js";
+import { requireGatePassword } from "./adminGate.js";
 
-// ⚠️ 로그인(SSO) 붙기 전까지의 임시 접근 제어. 소스만 보면 바로 드러나는 수준이라 실제 보안장치가 아니다 (12-8).
-const ADMIN_PASSWORD = "team-admin-2026";
-
-const gateEl = document.getElementById("password-gate");
-const appEl = document.getElementById("app");
-const passwordInput = document.getElementById("password");
-const passwordError = document.getElementById("password-error");
-
-document.getElementById("password-submit").addEventListener("click", checkPassword);
-passwordInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") checkPassword();
+requireGatePassword({
+  password: "team-admin-2026", // ⚠️ 로그인(SSO) 붙기 전까지의 임시 접근 제어, 실제 보안장치가 아니다 (12-8)
+  storageKey: "adminTeamsAuthed",
+  gateEl: document.getElementById("password-gate"),
+  appEl: document.getElementById("app"),
+  passwordInputId: "password",
+  submitBtnId: "password-submit",
+  errorId: "password-error",
+  onUnlock: loadOrgTree,
 });
-
-function checkPassword() {
-  if (passwordInput.value === ADMIN_PASSWORD) {
-    sessionStorage.setItem("adminTeamsAuthed", "1");
-    showApp();
-  } else {
-    passwordError.classList.remove("hidden");
-  }
-}
-
-function showApp() {
-  gateEl.classList.add("hidden");
-  appEl.classList.remove("hidden");
-  loadOrgTree();
-}
-
-if (sessionStorage.getItem("adminTeamsAuthed") === "1") {
-  showApp();
-}
 
 const treeEl = document.getElementById("org-tree");
 const formPanelEl = document.getElementById("team-form-panel");
@@ -85,7 +66,7 @@ function renderForm(teamId, teamName, config) {
   const keywords = [...config.keywords];
 
   formPanelEl.innerHTML = `
-    <h2>${teamName}</h2>
+    <h2>${escapeHtml(teamName)}</h2>
 
     <label>키워드</label>
     <div class="chip-input" id="chip-input">
@@ -94,10 +75,10 @@ function renderForm(teamId, teamName, config) {
     </div>
 
     <label for="description">설명 (LLM 재판단에 사용될 예정 — 지금은 Mock이라 미반영)</label>
-    <textarea id="description">${config.description}</textarea>
+    <textarea id="description">${escapeHtml(config.description)}</textarea>
 
     <label>Chat 웹훅</label>
-    <p class="muted" id="webhook-preview">${config.hasWebhook ? `등록됨 (${config.webhookPreview})` : "등록 안 됨"}</p>
+    <p class="muted" id="webhook-preview">${config.hasWebhook ? `등록됨 (${escapeHtml(config.webhookPreview)})` : "등록 안 됨"}</p>
     <input type="text" id="webhook-input" class="hidden" placeholder="https://hooks.slack.com/services/..." />
     <button type="button" class="secondary" id="webhook-change-btn">웹훅 변경</button>
     <button type="button" class="secondary" id="test-webhook-btn" ${config.hasWebhook ? "" : "disabled"}>테스트 전송</button>
@@ -125,7 +106,8 @@ function renderForm(teamId, teamName, config) {
     const chipListEl = document.getElementById("chip-list");
     chipListEl.innerHTML = list
       .map(
-        (kw, i) => `<span class="chip">${kw}<button type="button" class="chip-remove" data-index="${i}">×</button></span>`
+        (kw, i) =>
+          `<span class="chip">${escapeHtml(kw)}<button type="button" class="chip-remove" data-index="${i}">×</button></span>`
       )
       .join("");
     chipListEl.querySelectorAll(".chip-remove").forEach((btn) => {

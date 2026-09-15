@@ -3,6 +3,7 @@
 // liveChatClient.js와 동일한 인터페이스(sendMessage/sendReminder(team, inquiry))를 유지한다.
 
 const { buildInitialMessage, buildReminderMessage } = require("./messageBuilder");
+const { nowIso } = require("../utils/time");
 
 let seq = 0;
 const log = [];
@@ -11,7 +12,7 @@ const log = [];
 async function sendMessage(team, inquiry) {
   seq += 1;
   const messageId = `mock-msg-${seq}`;
-  const sentAt = new Date().toISOString();
+  const sentAt = nowIso();
   const text = buildInitialMessage(inquiry);
 
   log.push({ type: "initial", messageId, team: team.name, inquiryId: inquiry.id, text, sentAt });
@@ -24,7 +25,7 @@ async function sendMessage(team, inquiry) {
 async function sendReminder(team, inquiry) {
   seq += 1;
   const messageId = `mock-msg-${seq}`;
-  const sentAt = new Date().toISOString();
+  const sentAt = nowIso();
   const text = buildReminderMessage(inquiry);
 
   log.push({ type: "reminder", messageId, team: team.name, inquiryId: inquiry.id, text, sentAt });

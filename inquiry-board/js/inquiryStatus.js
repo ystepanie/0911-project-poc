@@ -27,21 +27,21 @@ export function statusDetails(inquiry) {
       `매칭 실패 (사유: ${labelFailReason(inquiry.failReason)}) — 담당자가 확인 후 팀을 배정할 예정입니다.`
     );
   } else {
-    lines.push(`매칭 팀: ${inquiry.matchedTeam} (신뢰도 ${(inquiry.matchConfidence * 100).toFixed(0)}%)`);
+    lines.push(`매칭 팀: ${escapeHtml(inquiry.matchedTeam)} (신뢰도 ${(inquiry.matchConfidence * 100).toFixed(0)}%)`);
     if (inquiry.matchReason) {
-      lines.push(`AI 판단 근거: ${inquiry.matchReason}`);
+      lines.push(`AI 판단 근거: ${escapeHtml(inquiry.matchReason)}`);
     }
     if (inquiry.assignedManually) {
       lines.push("관리자가 수동으로 배정한 건입니다.");
     }
     lines.push(
       inquiry.assigneeName
-        ? `담당자: ${inquiry.assigneeName} (${new Date(inquiry.assigneeAssignedAt).toLocaleString()} 지정)`
+        ? `담당자: ${escapeHtml(inquiry.assigneeName)} (${new Date(inquiry.assigneeAssignedAt).toLocaleString()} 지정)`
         : "담당자: 미지정"
     );
     lines.push(
       inquiry.chatSendError
-        ? `팀 전달 실패: ${inquiry.chatSendError}`
+        ? `팀 전달 실패: ${escapeHtml(inquiry.chatSendError)}`
         : inquiry.chatSentAt
           ? `팀 전달 완료 (${new Date(inquiry.chatSentAt).toLocaleString()})`
           : "팀 전달 대기중"
@@ -72,9 +72,11 @@ export function renderAttachmentHtml(imageUrl) {
   return `<p><a href="${imageUrl}" target="_blank" rel="noopener"><img src="${imageUrl}" alt="첨부 이미지" style="max-width:100%;border-radius:4px;" /></a></p>`;
 }
 
-function escapeHtml(str) {
+// 문의 내용/AI 판단 근거처럼 사용자가 직접 입력했거나 사용자 입력에 영향받는 값을 innerHTML에 꽂기 전에
+// 반드시 거쳐야 한다 — admin-detail.js/my-inquiry-detail.js/admin-teams.js 공용.
+export function escapeHtml(str) {
   const div = document.createElement("div");
-  div.textContent = str;
+  div.textContent = str ?? "";
   return div.innerHTML;
 }
 

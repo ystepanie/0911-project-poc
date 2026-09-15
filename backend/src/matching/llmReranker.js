@@ -3,7 +3,8 @@
 // 실 LLM 전환 시 이 파일과 동일한 인터페이스(rerank)를 가진 LiveLlmReranker로 교체하고
 // 설정으로 스위칭하면 되도록, 호출부(matchInquiry)는 reranker를 인자로 주입받는 구조로 둔다.
 
-const CONFIDENCE_THRESHOLD = 0.5;
+const { CONFIDENCE_THRESHOLD, deriveFailure } = require("./rerankResult");
+
 const MATCHER_MODE = "llm_mock";
 
 // interface LlmReranker { rerank(text, candidates): { teamId, teamName, confidence, reason, failed, failReason } }
@@ -28,15 +29,12 @@ function rerank(text, candidates) {
     ? `키워드 점수 ${top.keywordScore.toFixed(2)}로 "${top.teamName}"이 1위 (2위 "${second.teamName}"와 점수차 ${diff.toFixed(2)})`
     : `후보가 "${top.teamName}" 1개뿐이며 키워드 점수 ${top.keywordScore.toFixed(2)}`;
 
-  const failed = confidence < CONFIDENCE_THRESHOLD;
-
   return {
     teamId: top.teamId,
     teamName: top.teamName,
     confidence,
     reason,
-    failed,
-    failReason: failed ? "low_confidence" : null,
+    ...deriveFailure(confidence),
     matcherMode: MATCHER_MODE,
   };
 }

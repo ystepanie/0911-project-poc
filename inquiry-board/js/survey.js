@@ -1,4 +1,5 @@
-import { getInquiry, submitSurvey } from "./api.js";
+import { getInquiry } from "./api.js";
+import { bindSurveyForm } from "./surveyForm.js";
 
 const params = new URLSearchParams(window.location.search);
 const inquiryId = params.get("id");
@@ -26,18 +27,7 @@ async function init() {
   summaryEl.textContent = `문의 ID: ${inquiry.id} · 제목: ${inquiry.title}`;
 }
 
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  const satisfaction = Number(form.satisfaction.value);
-  const matchCorrect = form.matchCorrect.value === "yes";
-  const comment = document.getElementById("comment").value.trim();
-
-  const submitBtn = form.querySelector("button[type=submit]");
-  submitBtn.disabled = true;
-
-  await submitSurvey(inquiryId, { satisfaction, matchCorrect, comment });
-
+bindSurveyForm(form, "comment", () => inquiryId, () => {
   form.classList.add("hidden");
   resultBox.classList.remove("hidden");
 });

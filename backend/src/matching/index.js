@@ -3,6 +3,8 @@
 const { getCandidates } = require("./candidateFilter");
 const { getReranker } = require("./rerankerRegistry");
 
+// 반환 필드명을 라우트가 저장하는 inquiry 객체의 필드명과 그대로 맞춘다(matchedTeam/matchReason 등) —
+// routes/inquiries.js가 이름을 다시 매핑하지 않고 `...match`로 바로 합칠 수 있게 하기 위함.
 async function matchInquiry(text, teams, reranker = getReranker()) {
   const candidateTeams = getCandidates(text, teams);
 
@@ -10,12 +12,12 @@ async function matchInquiry(text, teams, reranker = getReranker()) {
     return {
       candidateTeams,
       matchedTeamId: null,
-      matchedTeamName: null,
+      matchedTeam: null,
       matchConfidence: 0,
       matchFailed: true,
       failReason: "no_candidate",
       matcherMode: null, // 후보가 없어 재판단기를 아예 호출하지 않았다
-      reason: null,
+      matchReason: null,
     };
   }
 
@@ -24,12 +26,12 @@ async function matchInquiry(text, teams, reranker = getReranker()) {
   return {
     candidateTeams,
     matchedTeamId: result.teamId,
-    matchedTeamName: result.teamName,
+    matchedTeam: result.teamName,
     matchConfidence: result.confidence,
     matchFailed: result.failed,
     failReason: result.failReason,
     matcherMode: result.matcherMode,
-    reason: result.reason,
+    matchReason: result.reason,
   };
 }
 

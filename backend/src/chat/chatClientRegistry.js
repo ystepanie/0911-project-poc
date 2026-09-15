@@ -5,9 +5,12 @@
 const mockChatClient = require("./mockChatClient");
 const liveChatClient = require("./liveChatClient");
 const teamRepository = require("../teams/teamRepository");
+const { createRegistry } = require("../utils/pickClient");
 
-function getChatClient(teamId) {
-  return teamRepository.getWebhookUrl(teamId) ? liveChatClient : mockChatClient;
-}
+const getChatClient = createRegistry(
+  (teamId) => Boolean(teamRepository.getWebhookUrl(teamId)),
+  liveChatClient,
+  mockChatClient
+);
 
 module.exports = { getChatClient };

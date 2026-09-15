@@ -9,10 +9,10 @@ const Anthropic = require("@anthropic-ai/sdk");
 const teamRepository = require("../teams/teamRepository");
 const mockLlmReranker = require("./llmReranker");
 const { maskSensitiveInfo } = require("../security/maskSensitiveInfo");
+const { CONFIDENCE_THRESHOLD, deriveFailure } = require("./rerankResult");
 
 const MODEL = "claude-haiku-4-5-20251001"; // 후보 3~5개 중 하나를 고르는 짧은 분류 작업이라 가벼운 모델로 충분
 const MATCHER_MODE = "llm_live";
-const { CONFIDENCE_THRESHOLD } = mockLlmReranker;
 
 let client = null;
 function getClient() {
@@ -72,15 +72,12 @@ async function rerank(text, candidates) {
     const matched = candidates.find((c) => c.teamId === teamId);
     if (!matched) throw new Error(`LLM이 후보에 없는 teamId(${teamId})를 반환했습니다.`);
 
-    const failed = confidence < CONFIDENCE_THRESHOLD;
-
     return {
       teamId: matched.teamId,
       teamName: matched.teamName,
       confidence,
       reason,
-      failed,
-      failReason: failed ? "low_confidence" : null,
+      ...deriveFailure(confidence),
       matcherMode: MATCHER_MODE,
     };
   } catch (err) {

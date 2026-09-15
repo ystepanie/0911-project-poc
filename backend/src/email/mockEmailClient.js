@@ -3,6 +3,8 @@
 // 실 연동 시 이 파일과 동일한 인터페이스(sendEmail)를 가진 LiveEmailClient(Gmail API)로 교체하면 되도록 둔다.
 // 실 연동은 Google Chat App(Phase 6)과 마찬가지로 사내 Workspace 관리자의 OAuth/서비스 계정 승인이 필요하다.
 
+const { nowIso } = require("../utils/time");
+
 let seq = 0;
 const log = [];
 
@@ -10,7 +12,7 @@ const log = [];
 function sendEmail(to, subject, body) {
   seq += 1;
   const messageId = `mock-mail-${seq}`;
-  const sentAt = new Date().toISOString();
+  const sentAt = nowIso();
 
   log.push({ messageId, to, subject, body, sentAt });
   console.log(`[MockEmailClient] → ${to}\n제목: ${subject}\n${body}\n`);

@@ -3,7 +3,7 @@
 // 여기서는 매칭/처리/설문 상태를 조회만 한다.
 
 import { getInquiryByToken, resolveUploadUrl } from "./api.js";
-import { statusDetails, renderStatusLogHtml, renderAttachmentHtml } from "./inquiryStatus.js";
+import { statusDetails, renderStatusLogHtml, renderAttachmentHtml, escapeHtml } from "./inquiryStatus.js";
 
 const detailEl = document.getElementById("detail");
 const params = new URLSearchParams(window.location.search);
@@ -30,9 +30,9 @@ async function init() {
     .join("");
 
   detailEl.innerHTML = `
-    <p><strong>문의 ID:</strong> ${inquiry.id}</p>
-    <p><strong>제목:</strong> ${inquiry.title}</p>
-    <p><strong>내용:</strong><br/>${inquiry.content.replace(/\n/g, "<br/>")}</p>
+    <p><strong>문의 ID:</strong> ${escapeHtml(inquiry.id)}</p>
+    <p><strong>제목:</strong> ${escapeHtml(inquiry.title)}</p>
+    <p><strong>내용:</strong><br/>${escapeHtml(inquiry.content).replace(/\n/g, "<br/>")}</p>
     ${imageHtml}
     <hr />
     ${statusHtml}
