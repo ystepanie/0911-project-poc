@@ -123,44 +123,26 @@ button.secondary:hover {
   font-size: 13px;
 }
 
-.admin-demo {
-  border: 1px dashed #adb5bd;
-}
-
-.admin-demo h2 {
-  font-size: 15px;
-  margin: 0 0 16px;
-  color: #495057;
-}
-
-.admin-demo h3 {
-  font-size: 13px;
-  margin: 16px 0 8px;
-  color: #495057;
-}
-
-.admin-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 0;
+.list-row {
+  display: block;
+  padding: 10px 0;
   border-bottom: 1px solid #eee;
-  font-size: 13px;
+  font-size: 14px;
+  text-decoration: none;
+  color: inherit;
 }
 
-.admin-row span {
-  flex: 1;
+.list-row:hover {
+  background: #f8f9fa;
 }
 
-.admin-row button {
-  margin-top: 0;
-  padding: 4px 10px;
-  font-size: 12px;
+.list-row .list-row-title {
+  font-weight: bold;
 }
 
-.admin-row select {
-  padding: 4px;
-  font-size: 12px;
+.status-line {
+  margin: 4px 0;
+  font-size: 14px;
 }
 
 .modal-overlay {

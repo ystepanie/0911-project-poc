@@ -24,9 +24,6 @@ form.addEventListener("submit", async (e) => {
     localStorage.setItem("myContact", contact);
     renderResult(inquiry);
     form.reset();
-    if (window.refreshAdminDemo) {
-      window.refreshAdminDemo();
-    }
   } finally {
     submitBtn.disabled = false;
   }
@@ -68,8 +65,5 @@ function renderResult(inquiry) {
     await completeInquiry(inquiry.id);
     ev.target.outerHTML =
       '<p class="muted">완료 처리되었습니다. 관리자가 설문 발송을 확정하면 다음 접속 시 만족도 조사가 안내됩니다.</p>';
-    if (window.refreshAdminDemo) {
-      window.refreshAdminDemo();
-    }
   });
 }

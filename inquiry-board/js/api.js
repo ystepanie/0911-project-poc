@@ -9,10 +9,9 @@ export function resolveUploadUrl(imageUrl) {
   return imageUrl ? `${API_ORIGIN}${imageUrl}` : null;
 }
 
-// 완료 트리거(Chat 리액션)/설문 발송 확정 액션을 누른 "사람"을 이 데모에서는 입력받지 않으므로,
-// 실제로는 로그인(Google Chat 계정, 관리자 계정)에서 가져올 값을 임시 고정값으로 대체한다.
+// 완료 트리거(Chat 리액션) 액션을 누른 "사람"을 이 데모에서는 입력받지 않으므로,
+// 실제로는 로그인(Google Chat 계정)에서 가져올 값을 임시 고정값으로 대체한다.
 const DEMO_ACTOR_EMAIL = "team-demo@example.com";
-const DEMO_ADMIN_EMAIL = "admin-demo@example.com";
 
 async function request(path, options = {}) {
   const res = await fetch(`${API_BASE}${path}`, {
@@ -76,14 +75,6 @@ export async function submitSurvey(inquiryId, { satisfaction, matchCorrect, comm
   });
 }
 
-// 관리자가 설문 발송을 확정하는 액션 (정식 관리자 페이지 대신 데모 버튼에서 호출)
-export async function markSurveyReady(inquiryId) {
-  return request(`/inquiries/${encodeURIComponent(inquiryId)}/survey-ready`, {
-    method: "POST",
-    body: JSON.stringify({ adminEmail: DEMO_ADMIN_EMAIL }),
-  });
-}
-
 // contact(연락처) 기준으로 발송 확정되었고 아직 응답하지 않은 설문이 있는지 조회
 // 게시판 접속 시 팝업 노출 여부를 판단하는 데 사용 (5.5절 참고)
 export async function getPendingSurvey(contact) {
@@ -91,27 +82,9 @@ export async function getPendingSurvey(contact) {
   return request(`/inquiries/pending-survey?contact=${encodeURIComponent(contact)}`);
 }
 
-// 완료됐지만 설문 발송이 아직 확정되지 않은 건 목록 (관리자 데모 화면용)
-export async function listSurveyPending() {
-  return request("/admin/survey-pending");
-}
-
-// 매칭 실패로 미배정 상태인 건 목록 (관리자 데모 화면용)
-export async function listUnassigned() {
-  return request("/admin/unassigned");
-}
-
-// 관리자가 매칭 실패 건에 팀을 수동 지정 → 정상 플로우(Chat 전송) 재진입 (5.6절)
-export async function assignTeam(inquiryId, teamId) {
-  return request(`/admin/inquiries/${encodeURIComponent(inquiryId)}/assign-team`, {
-    method: "POST",
-    body: JSON.stringify({ teamId }),
-  });
-}
-
-// 팀 목록 조회 (관리자 데모의 팀 배정 드롭다운용)
-export async function getTeams() {
-  return request("/teams");
+// "내 문의 목록"(my-inquiries.html)용 — contact 기준으로 본인이 제출한 문의 전체 조회
+export async function listMyInquiries(contact) {
+  return request(`/inquiries?contact=${encodeURIComponent(contact)}`);
 }
 
 // 팀 관리자 페이지(admin-teams.html)용 — Phase 12

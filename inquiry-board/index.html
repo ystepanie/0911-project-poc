@@ -8,6 +8,7 @@
 <body>
 <div class="container">
   <h1>문의 작성</h1>
+  <p class="muted"><a href="my-inquiries.html">내 문의 목록 보기</a></p>
 
   <form id="inquiry-form">
     <label for="author">작성자</label>
@@ -35,16 +36,6 @@
   </form>
 
   <div id="result" class="result hidden"></div>
-</div>
-
-<div class="container admin-demo">
-  <h2>관리자 데모 (정식 관리자 페이지 대체 — 흐름 검증용)</h2>
-
-  <h3>완료됐지만 설문 미발송</h3>
-  <div id="admin-survey-pending"></div>
-
-  <h3>매칭 실패(미배정)</h3>
-  <div id="admin-unassigned"></div>
 </div>
 
 <div id="survey-modal" class="modal-overlay hidden">
@@ -78,11 +69,8 @@
 
 <script type="module" src="js/inquiry.js"></script>
 <script type="module">
-  import { refreshAdminDemo } from "./js/admin-demo.js";
   import { checkAndShowSurveyPopup } from "./js/survey-popup.js";
 
-  window.refreshAdminDemo = refreshAdminDemo;
-  refreshAdminDemo();
   checkAndShowSurveyPopup();
 </script>
 </body>

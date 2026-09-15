@@ -80,6 +80,22 @@ router.post("/", upload.single("image"), async (req, res) => {
   res.status(201).json(inquiry);
 });
 
+// "내 문의 목록"(my-inquiries.html)용 — contact(임시 식별자) 기준으로 본인이 제출한 문의 전체 조회.
+// 로그인 전까지는 본인 확인 수단이 없어, 실제로는 고정된 데모 사용자 한 명의 이메일로만 조회한다.
+router.get("/", (req, res) => {
+  const { contact } = req.query;
+  if (!contact) {
+    return res.status(400).json({ error: "contact 쿼리 파라미터는 필수입니다." });
+  }
+
+  const items = store
+    .list()
+    .filter((item) => item.contact === contact)
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  res.json(items);
+});
+
 // 8-5: 접속 시 팝업 노출 여부 판단용 — surveyReady=true && 미응답인 문의를 contact(임시 식별자) 기준으로 조회
 // "/:id"보다 먼저 선언해야 "pending-survey"가 :id로 잡히지 않는다.
 router.get("/pending-survey", (req, res) => {
