@@ -3,7 +3,7 @@
 // 실제 로그인(SSO) 연동 시 이 상수 대신 로그인 세션의 이메일을 쓰면 된다.
 
 import { listMyInquiries } from "./api.js";
-import { summaryLabel } from "./inquiryStatus.js";
+import { summaryLabel, escapeHtml } from "./inquiryStatus.js";
 
 const DEMO_CONTACT = "demo-user@example.com";
 
@@ -23,8 +23,8 @@ async function init() {
     .map(
       (item) => `
         <a class="list-row" href="my-inquiry-detail.html?token=${encodeURIComponent(item.accessToken)}">
-          <span class="list-row-title">${item.id} · ${item.title}</span>
-          <p class="muted">${summaryLabel(item)} · ${new Date(item.createdAt).toLocaleString()}</p>
+          <span class="list-row-title">${escapeHtml(item.id)} · ${escapeHtml(item.title)}</span>
+          <p class="muted">${escapeHtml(summaryLabel(item))} · ${new Date(item.createdAt).toLocaleString()}</p>
         </a>
       `
     )

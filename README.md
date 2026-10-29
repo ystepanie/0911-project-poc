@@ -63,7 +63,9 @@ ANTHROPIC_API_KEY=sk-ant-...
 cp data/team-config.example.json data/team-config.json
 ```
 
-`backend/data/team-config.json`에서 팀별 `keywords`(매칭용 키워드 배열), `description`(LLM 재판단용 설명), 필요하면 `webhookUrl`(Slack/Google Chat 수신 웹훅)을 채워 넣으세요. 웹훅을 비워두면 해당 팀은 자동으로 Mock 전송(콘솔 로그)으로 동작합니다. 이 파일은 서버 실행 중에는 관리자 페이지(`admin-teams.html`)에서도 수정할 수 있습니다 — 비밀번호는 `inquiry-board/js/admin-teams.js`의 `requireGatePassword({ password: ... })` 호출부에 하드코딩돼 있습니다(로그인 전까지의 임시 조치, 실제 보안장치 아님).
+`backend/data/team-config.json`에서 팀별 `keywords`(매칭용 키워드 배열), `description`(LLM 재판단용 설명), 필요하면 `webhookUrl`(Slack/Google Chat 수신 웹훅)을 채워 넣으세요. 웹훅을 비워두면 해당 팀은 자동으로 Mock 전송(콘솔 로그)으로 동작합니다. 이 파일은 서버 실행 중에는 팀 관리 페이지(`admin-teams.html`)에서도 수정할 수 있습니다. 하드코딩한 비밀번호와 임시 게이트는 제거했으며, 현재는 로그인·권한 관리가 없는 로컬 PoC 시연용 화면입니다.
+
+후보 팀이 없거나 판단 점수가 낮으면 문의를 미배정 건으로 기록하고 팀 알림을 보내지 않습니다. 이 상태에서 자동 후속 배정이나 재안내를 약속하지 않습니다. 관리자 수동 배정 API는 별도 시연 기능으로 남아 있습니다.
 
 서버를 실행합니다.
 
@@ -100,7 +102,7 @@ npx serve -l 8000
 | 문의 게시판 | `index.html` | 문의 등록 |
 | 내 문의 목록 | `my-inquiries.html` | 문의자가 자신이 등록한 문의 상태 조회 |
 | 문의 상세(Chat 링크) | `admin-detail.html?token=...` | 담당자가 완료 처리·담당자 지정 |
-| 팀 관리자 페이지 | `admin-teams.html` | 팀별 키워드/설명/웹훅 관리 (비밀번호 게이트) |
+| 팀 관리자 페이지 | `admin-teams.html` | 팀별 키워드/설명/웹훅 관리 (로컬 PoC 시연용, 로그인 미구현) |
 
 ## 4. 정상 동작 확인
 

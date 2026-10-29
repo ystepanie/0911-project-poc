@@ -6,6 +6,7 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
+    "test": "node --test",
     "migrate": "psql \"$DATABASE_URL\" -f migrations/001_create_teams.sql -f migrations/002_create_inquiries.sql -f migrations/003_create_surveys.sql -f migrations/004_create_match_audit_log.sql",
     "seed": "psql \"$DATABASE_URL\" -f seeds/001_teams.sql"
   },

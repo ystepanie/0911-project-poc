@@ -31,8 +31,15 @@ router.get("/:id/config", (req, res) => {
 // 12-5: keywords/description/webhookUrl 저장 (webhookUrl 미전달 시 기존 값 유지)
 router.put("/:id/config", (req, res) => {
   const { keywords, description, webhookUrl } = req.body;
-  if (keywords !== undefined && !Array.isArray(keywords)) {
-    return res.status(400).json({ error: "keywords는 배열이어야 합니다." });
+  if (keywords !== undefined && (!Array.isArray(keywords) ||
+      keywords.some((keyword) => typeof keyword !== "string" || !keyword.trim()))) {
+    return res.status(400).json({ error: "키워드는 비어 있지 않은 문자열 배열이어야 합니다." });
+  }
+  if (description !== undefined && typeof description !== "string") {
+    return res.status(400).json({ error: "담당 업무 설명은 문자열이어야 합니다." });
+  }
+  if (webhookUrl !== undefined && typeof webhookUrl !== "string") {
+    return res.status(400).json({ error: "웹훅 URL은 문자열이어야 합니다." });
   }
 
   const updated = teamRepository.saveTeamConfig(req.teamId, { keywords, description, webhookUrl });

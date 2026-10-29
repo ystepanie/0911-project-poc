@@ -2,22 +2,9 @@
 
 import { getOrgChart, getTeamConfig, saveTeamConfig, testTeamWebhook } from "./api.js";
 import { escapeHtml } from "./inquiryStatus.js";
-import { requireGatePassword } from "./adminGate.js";
-
-requireGatePassword({
-  password: "team-admin-2026", // ⚠️ 로그인(SSO) 붙기 전까지의 임시 접근 제어, 실제 보안장치가 아니다 (12-8)
-  storageKey: "adminTeamsAuthed",
-  gateEl: document.getElementById("password-gate"),
-  appEl: document.getElementById("app"),
-  passwordInputId: "password",
-  submitBtnId: "password-submit",
-  errorId: "password-error",
-  onUnlock: loadOrgTree,
-});
 
 const treeEl = document.getElementById("org-tree");
 const formPanelEl = document.getElementById("team-form-panel");
-let selectedTeamId = null;
 
 async function loadOrgTree() {
   const orgChart = await getOrgChart();
@@ -55,7 +42,6 @@ function renderNode(node) {
 }
 
 async function selectTeam(teamId, teamName) {
-  selectedTeamId = teamId;
   formPanelEl.innerHTML = "불러오는 중...";
 
   const config = await getTeamConfig(teamId);
@@ -74,7 +60,7 @@ function renderForm(teamId, teamName, config) {
       <input type="text" id="chip-text" placeholder="키워드 입력 후 Enter" />
     </div>
 
-    <label for="description">설명 (LLM 재판단에 사용될 예정 — 지금은 Mock이라 미반영)</label>
+    <label for="description">담당 업무 설명 (실제 AI 연결 시 팀 선택에 사용)</label>
     <textarea id="description">${escapeHtml(config.description)}</textarea>
 
     <label>Chat 웹훅</label>
@@ -158,3 +144,7 @@ function renderForm(teamId, teamName, config) {
     }
   });
 }
+
+loadOrgTree().catch(() => {
+  treeEl.textContent = "조직도를 불러오지 못했습니다. 백엔드 실행 상태를 확인한 뒤 새로고침해주세요.";
+});

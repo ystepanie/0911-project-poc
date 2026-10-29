@@ -15,7 +15,7 @@ async function checkTimeouts(now = new Date()) {
   const nowMs = now.getTime();
 
   for (const inquiry of store.list()) {
-    if (inquiry.matchFailed || inquiry.completedAt || !inquiry.chatSentAt) continue;
+    if (inquiry.matchFailed || inquiry.completedAt || inquiry.cancelledAt || !inquiry.chatSentAt) continue;
 
     if (!inquiry.reminderSentAt) {
       const elapsed = nowMs - new Date(inquiry.chatSentAt).getTime();

@@ -19,7 +19,7 @@ function labelFailReason(code) {
 
 // 목록 화면에서 한 줄로 보여줄 요약
 export function summaryLabel(inquiry) {
-  if (inquiry.matchFailed) return "담당자 배정 대기중";
+  if (inquiry.matchFailed) return "미배정 건으로 기록됨";
   if (inquiry.cancelledAt) return "문의 취소됨";
   if (!inquiry.completedAt) return `처리중 (담당팀: ${inquiry.matchedTeam})`;
   if (!inquiry.surveyReady) return "처리 완료 (설문 발송 대기)";
@@ -33,7 +33,7 @@ export function statusDetails(inquiry) {
 
   if (inquiry.matchFailed) {
     lines.push(
-      `매칭 실패 (사유: ${labelFailReason(inquiry.failReason)}) — 담당자가 확인 후 팀을 배정할 예정입니다.`
+      `미배정 건으로 기록되었습니다 (사유: ${escapeHtml(labelFailReason(inquiry.failReason))}). 팀 알림은 보내지 않았습니다.`
     );
     return lines;
   }
